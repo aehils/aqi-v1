@@ -4,10 +4,10 @@ import { course } from '../../data/course';
 import { instrumentedCount, constructCount } from '../../data/constructs';
 
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'perspectives', label: 'Perspectives' },
-  { id: 'findings', label: 'Findings' },
-  { id: 'recommendations', label: 'Recommendations' },
+  { id: 'overview', label: 'Course overview' },
+  { id: 'perspectives', label: 'Compare sources' },
+  { id: 'findings', label: 'All findings' },
+  { id: 'recommendations', label: 'Action plan' },
 ];
 
 const [sessionYear, sessionSemester] = course.session.split(', ');
@@ -29,7 +29,7 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
       </header>
     )}
     {view === 'intelligence' && (
-      <nav className="nav" aria-label="Intelligence views">
+      <nav className="nav" aria-label="Course analysis views">
         <div className="nav__inner">
           {tabs.map((t) => (
             <button key={t.id} type="button" className="nav__tab" aria-current={t.id === tab ? 'page' : undefined} onClick={() => onTab(t.id)}>

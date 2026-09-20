@@ -73,7 +73,7 @@ export const reducer = (state: State, action: Action): State => {
     case 'SET_TAB':
       return { ...state, tab: action.tab, openFindingId: null, openConstructId: null };
     case 'OPEN_FINDING':
-      return { ...state, openFindingId: action.id, openConstructId: null, tab: action.id ? 'findings' : state.tab };
+      return { ...state, openFindingId: action.id, openConstructId: null };
     case 'OPEN_CONSTRUCT':
       return { ...state, openConstructId: action.id };
     case 'RESTART':

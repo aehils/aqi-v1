@@ -4,7 +4,7 @@ import type { DomainId, Role } from '../data/types';
 import { indicatorById, indicators } from '../data/indicators';
 import { constructById } from '../data/constructs';
 import { instruments } from '../instruments';
-import { resolveMetric, meanFor } from './aggregate';
+import { resolveMetric, meanFor, distributionFor, type DistributionRow } from './aggregate';
 import { seedDataset, type Dataset } from './dataset';
 import { checkAnswers, cohortValidation, summarise, type CohortValidation, type ConsistencySummary, type PairCheck } from './validate';
 import type { ViewerSubmission } from './session';
@@ -52,6 +52,9 @@ export interface ResponseReading {
   /** The cohort's mean before the viewer's response was added. */
   cohortMean: number;
   delta: number;
+  cohortN: number;
+  cohortUnscored: number;
+  distribution: DistributionRow[];
   /** Whether this reading is one of the crucial ones carrying a validator. */
   validated: boolean;
 }
@@ -95,7 +98,8 @@ export const buildReport = (submission: ViewerSubmission, ds: Dataset): Response
     const ind = indicatorById(q.indicatorId!);
     const construct = ind.constructId ? constructById(ind.constructId) : null;
     // Compared against the base as it stood before this response joined it.
-    const cohortMean = meanFor(seedDataset, ind.id, role).mean;
+    const cohort = meanFor(seedDataset, ind.id, role);
+    const cohortMean = cohort.mean;
     readings.push({
       questionId: q.id,
       indicatorId: ind.id,
@@ -106,6 +110,9 @@ export const buildReport = (submission: ViewerSubmission, ds: Dataset): Response
       value: opt.value,
       answerLabel: opt.label,
       cohortMean,
+      cohortN: cohort.nScoring,
+      cohortUnscored: cohort.nNonScoring,
+      distribution: distributionFor(seedDataset, ind.id, role).rows,
       delta: opt.value - cohortMean,
       validated: instruments[role].some((v) => v.validates === q.id),
     });

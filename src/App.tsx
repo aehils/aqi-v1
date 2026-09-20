@@ -35,8 +35,8 @@ export const App = () => {
   }, [state.view, state.questionIndex]);
 
   useEffect(() => {
-    if (state.view === 'intelligence' && !state.openFindingId) window.scrollTo({ top: 0 });
-  }, [state.tab, state.view, state.openFindingId]);
+    if (state.view === 'intelligence') window.scrollTo({ top: 0 });
+  }, [state.tab, state.view]);
 
   const dataset = useMemo(() => buildDataset(state.submission), [state.submission]);
   const impact = useMemo(() => (state.submission ? computeViewerImpact(state.submission) : null), [state.submission]);
@@ -54,11 +54,11 @@ export const App = () => {
       case 'assembly':
         return <Assembly submission={state.submission!} onDone={() => dispatch({ type: 'ASSEMBLY_DONE' })} />;
       case 'report':
-        return <ResponseReport submission={state.submission!} dataset={dataset} onContinue={() => dispatch({ type: 'REPORT_DONE' })} />;
+        return <ResponseReport submission={state.submission!} dataset={dataset} onContinue={() => dispatch({ type: 'REPORT_DONE' })} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
       case 'intelligence':
         switch (state.tab) {
           case 'overview':
-            return <Overview dataset={dataset} impact={impact} submission={state.submission} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
+            return <Overview dataset={dataset} impact={impact} submission={state.submission} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} onNavigate={(tab) => dispatch({ type: 'SET_TAB', tab })} onOpenConstruct={(id) => dispatch({ type: 'OPEN_CONSTRUCT', id })} />;
           case 'perspectives':
             return <Perspectives dataset={dataset} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
           case 'findings':
@@ -77,7 +77,7 @@ export const App = () => {
       onRestart={() => dispatch({ type: 'RESTART' })}
     >
       {content}
-      {state.view === 'intelligence' && state.openFindingId && (
+      {(state.view === 'intelligence' || state.view === 'report') && state.openFindingId && (
         <FindingDrawer
           findingId={state.openFindingId}
           dataset={dataset}
@@ -87,7 +87,7 @@ export const App = () => {
           onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })}
         />
       )}
-      {state.view === 'intelligence' && state.openConstructId && (
+      {(state.view === 'intelligence' || state.view === 'report') && state.openConstructId && (
         <ConstructPanel constructId={state.openConstructId} dataset={dataset} onClose={() => dispatch({ type: 'OPEN_CONSTRUCT', id: null })} />
       )}
     </AppShell>

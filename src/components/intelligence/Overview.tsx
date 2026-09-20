@@ -1,189 +1,86 @@
 import type { Dataset } from '../../engine/dataset';
-import type { FindingMetric } from '../../data/types';
 import type { ViewerImpact, ViewerSubmission } from '../../engine/session';
-import { firingFindings } from '../../engine/session';
-import { groupSizes, metricN, resolveMetric } from '../../engine/aggregate';
+import type { Tab } from '../../state/reducer';
+import { buildCourseAnalysis } from '../../engine/courseAnalysis';
+import { groupSizes } from '../../engine/aggregate';
 import { derived } from '../../engine/derived';
-import { findings } from '../../data/findings';
-import { evaluateTrigger } from '../../engine/triggers';
-import { constructBand } from '../../engine/bands';
-import { indicatorById } from '../../data/indicators';
-import { questionById, groupNouns } from '../../instruments';
 import { DomainProfile } from './DomainProfile';
-import { BandTag } from '../shell/BandTag';
-import { f1, withUnit, share } from '../../lib/format';
+import { FindingSummary } from './FindingSummary';
 import { ChainView } from '../report/ChainView';
-import { readChain, firstBreak } from '../../engine/report';
-import { overarchingQuestion } from '../../data/inquiry';
+import { readChain } from '../../engine/report';
+import { allDomainBands } from '../../engine/bands';
+import { course } from '../../data/course';
+import { actionTitles } from '../../data/analysisPresentation';
+import { groupNouns } from '../../instruments';
 
-const kindLabel: Record<string, string> = {
-  problem: 'Finding',
-  strength: 'Confirmed strength',
-  relationship: 'Relationship to investigate',
-};
-
-const formatMetric = (ds: Dataset, m: FindingMetric): string => {
-  const value = resolveMetric(ds, m.metric);
-  if (m.metric.kind === 'selection') {
-    const n = metricN(ds, m.metric) ?? 0;
-    return share(value, n);
-  }
-  if (m.unit === '%') return `${Math.round(value)}%`;
-  return withUnit(value, m.unit);
-};
-
-/** Overview: the lead, the evidence base, the quality profile, and every reading the analysis supports. */
-export const Overview = ({ dataset, impact, submission, onOpenFinding }: { dataset: Dataset; impact: ViewerImpact | null; submission: ViewerSubmission | null; onOpenFinding: (id: string) => void }) => {
-  const firing = firingFindings(dataset);
-  const lead = firing.find((f) => f.overviewHeadline) ?? null;
+export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigate, onOpenConstruct }: {
+  dataset: Dataset; impact: ViewerImpact | null; submission: ViewerSubmission | null;
+  onOpenFinding: (id: string) => void; onNavigate: (tab: Tab) => void; onOpenConstruct: (id: string) => void;
+}) => {
+  const analysis = buildCourseAnalysis(dataset);
   const n = groupSizes(dataset);
-  const counts = {
-    problem: firing.filter((f) => f.kind === 'problem').length,
-    strength: firing.filter((f) => f.kind === 'strength').length,
-    relationship: firing.filter((f) => f.kind === 'relationship').length,
-  };
-  const notFiring = findings.length - firing.length;
-  const chain = readChain(dataset);
-  const broken = firstBreak(dataset);
+  const lead = analysis.actions[0];
+  const domains = allDomainBands(dataset);
+  const limited = domains.filter(d => d.band === 'insufficient').length;
+  const evidenced = domains.reduce((sum, d) => sum + d.evidenced, 0);
+  const total = domains.reduce((sum, d) => sum + d.constructs.length + d.notInstrumented, 0);
 
-  return (
-    <div className="column">
-      <p className="section-label">Overview</p>
+  return <div className="column analysis-page">
+    <header className="analysis-heading">
+      <p className="section-label">Course analysis · {course.code}</p>
+      <h1>{analysis.concerns.length ? 'Where this course needs attention.' : 'What the course evidence supports.'}</h1>
+      <p>Bring student experience, teaching practice and course records together. Start with the priorities, check the evidence, then review a proposed action plan.</p>
+    </header>
 
-      <div className="split block">
-        <div>
-          <h1 className="headline" style={{ marginBottom: 'var(--s2)' }}>
-            {lead ? lead.overviewHeadline : 'No finding currently fires against the evidence base.'}
-          </h1>
-          {lead && (
-            <p className="muted">
-              Derived by joining the assessment schedule to the feedback records. No respondent reported it.{' '}
-              <button type="button" className="btn--link" onClick={() => onOpenFinding(lead.id)}>
-                Open the finding
-              </button>
-              .
-            </p>
-          )}
-        </div>
-        <aside className="split__aside">
-          <p className="section-label" style={{ marginBottom: 0 }}>
-            Evidence base
-          </p>
-          <dl>
-            <dt>Student responses</dt>
-            <dd>{n.student}</dd>
-            <dt>Lecturer responses</dt>
-            <dd>{n.faculty}</dd>
-            <dt>Administrative returns</dt>
-            <dd>{n.institution}</dd>
-            <dt>Feedback records</dt>
-            <dd>{derived('feedback.turnaround.n')}</dd>
-            <dt>Assessment artefacts</dt>
-            <dd>{derived('artefact.count')}</dd>
-            <dt>Observation records</dt>
-            <dd>{derived('observation.count')}</dd>
-          </dl>
-          <p>Plus the curriculum document, the LMS extract and the records office return. Every figure on this page resolves from these sources.</p>
-        </aside>
+    <section className="analysis-brief" aria-labelledby="brief-title">
+      <div className="analysis-brief__lead"><p className="section-label">Start here</p>
+        <h2 id="brief-title">{lead ? actionTitles[lead.id] : 'Review the current evidence before choosing an action.'}</h2>
+        <p>{lead ? lead.recommendation.action : 'No action-linked finding currently meets all its evidence rules. Explore the profile and evidence gaps below.'}</p>
+        {lead && <p className="analysis-owner"><strong>Proposed owner</strong> {lead.recommendation.owner}</p>}
+        <button type="button" className="btn" onClick={() => onNavigate('recommendations')}>Review the action plan →</button>
+        {lead && <p className="analysis-small">First in the current planning order, based on evidence coverage and the share of students reached. This is not a certainty score.</p>}
       </div>
-
-      <div className="block">
-        <p className="section-label">The question, read against this course</p>
-        <div className="inquiry-banner">
-          <p className="inquiry-banner__q">{overarchingQuestion}</p>
-          {broken && (
-            <p className="inquiry-banner__note">
-              For BCH 305 the chain first breaks at link {broken.link.step}, {broken.link.name.toLowerCase()}: {broken.link.question.toLowerCase()} Everything downstream is read in that light.
-            </p>
-          )}
-        </div>
-        <ChainView chain={chain} />
+      <div className="analysis-brief__stats">
+        <div><strong>{analysis.concerns.length}</strong><span>issues supported by the current evidence</span></div>
+        <div><strong>{analysis.strengths.length}</strong><span>{analysis.strengths.length === 1 ? 'strength' : 'strengths'} to preserve</span></div>
+        <div><strong>{limited}</strong><span>{limited === 1 ? 'domain needs' : 'domains need'} more evidence before a judgement</span></div>
       </div>
+    </section>
 
-      <div className="block">
-        <p className="section-label">Quality profile</p>
-        <p className="section-note">
-          AQIP reads academic quality across seven domains. Each carries a band derived from the constructs evidenced within it, never a score. Open a domain to see how its band was derived.
-        </p>
-        <DomainProfile dataset={dataset} />
+    <nav className="report-jumps" aria-label="Course analysis sections">
+      <a href="#course-priorities">Priorities ↘</a><a href="#quality-profile">Quality profile ↘</a><a href="#evidence-scope">Evidence & limits ↘</a>
+    </nav>
+    <section className="analysis-section" id="course-priorities" aria-labelledby="priorities-title">
+      <div className="analysis-section-heading"><div><p className="section-label">01 · What matters</p><h2 id="priorities-title">Issues to act on, strengths to keep</h2></div>
+        <button className="btn--link" type="button" onClick={() => onNavigate('findings')}>Browse all findings →</button>
       </div>
+      <p className="analysis-lede">The figures describe the course as a whole. Each finding opens its sources, limits and suggested response.</p>
+      <div className="analysis-finding-grid">{analysis.concerns.map(f => <FindingSummary key={f.id} finding={f} dataset={dataset} onOpenFinding={onOpenFinding}
+        action={analysis.actions.find(a => a.findingId === f.id)?.recommendation.action.split('.')[0]} />)}</div>
+      {analysis.concerns.length === 0 && <p className="analysis-empty">No problem findings meet all their current rules. This does not establish that the course is problem-free.</p>}
+      <div className="analysis-finding-grid analysis-secondary">{[...analysis.strengths, ...analysis.questions].map(f => <FindingSummary key={f.id} finding={f} dataset={dataset} onOpenFinding={onOpenFinding} />)}</div>
+      {analysis.inactive.length > 0 && <p className="analysis-small">{analysis.inactive.length} further {analysis.inactive.length === 1 ? 'finding does' : 'findings do'} not meet the current rules. Inspect these under “Not currently supported” in All findings.</p>}
+    </section>
 
-      <div className="block">
-        <p className="section-label">What the analysis found</p>
-        <p className="section-note">
-          {counts.problem} problem finding{counts.problem === 1 ? '' : 's'}, {counts.strength} confirmed strength and {counts.relationship} relationship worth investigating.
-          {notFiring > 0 && ` ${notFiring} further rule${notFiring === 1 ? ' does' : 's do'} not fire against the current evidence base, and ${notFiring === 1 ? 'is' : 'are'} marked below.`} Each opens the rule that fired and the evidence behind it.
-        </p>
-        <div className="signals">
-          {findings.map((f) => {
-            const fires = evaluateTrigger(f, dataset).fires;
-            const band = constructBand(dataset, f.lineage.constructId).band;
-            return (
-              <button key={f.id} type="button" className="signal" onClick={() => onOpenFinding(f.id)}>
-                <span className="signal__head">
-                  <span>{kindLabel[f.kind]}</span>
-                  <span className="signal__head-right">
-                    {!fires && <span className="nearmiss">Rule did not fire</span>}
-                    {f.kind === 'relationship' ? <span className="chip">Association</span> : <BandTag band={band} />}
-                  </span>
-                </span>
-                <span className="signal__title">{f.title}</span>
-                <span className="signal__metrics">
-                  {f.overviewMetrics.map((m) => (
-                    <span className="signal__metric" key={m.label}>
-                      {m.label}
-                      <span className="figure">{formatMetric(dataset, m)}</span>
-                    </span>
-                  ))}
-                </span>
-                <span className="signal__foot">Open the evidence →</span>
-              </button>
-            );
-          })}
+    <section className="analysis-section" id="quality-profile" aria-labelledby="profile-title">
+      <p className="section-label">02 · The full profile</p><h2 id="profile-title">Where the evidence is strong—and where it is missing</h2>
+      <p className="analysis-lede">Each domain covers several aspects of quality. A domain can contain strengths and concerns at the same time. Its label reflects the model’s rules and available evidence, not an overall course score.</p>
+      <DomainProfile dataset={dataset} onOpenConstruct={onOpenConstruct} />
+      <details className="analysis-disclosure"><summary>How learning becomes a usable skill</summary><div><p className="analysis-lede">This sequence helps locate questions to investigate. A stage below its threshold does not prove the cause of a later outcome.</p><ChainView chain={readChain(dataset)} /></div></details>
+    </section>
+
+    <section className="analysis-section" id="evidence-scope" aria-labelledby="scope-title">
+      <p className="section-label">03 · Evidence & limits</p><h2 id="scope-title">What this analysis can tell you</h2>
+      <div className="analysis-scope">
+        <div><h3>What was considered</h3><dl className="analysis-evidence-counts">
+          <div><dt>Student responses</dt><dd>{n.student}</dd></div><div><dt>Lecturer responses</dt><dd>{n.faculty}</dd></div><div><dt>Administrative returns</dt><dd>{n.institution}</dd></div>
+          <div><dt>Feedback records</dt><dd>{derived('feedback.turnaround.n')}</dd></div><div><dt>Assessment papers</dt><dd>{derived('artefact.count')}</dd></div><div><dt>Teaching observations</dt><dd>{derived('observation.count')}</dd></div>
+        </dl><p>Also includes the curriculum, learning-platform activity and institutional records. All course data is simulated.</p></div>
+        <div><h3>What remains uncertain</h3><p>{evidenced} of {total} aspects in the quality model have quantitative evidence sufficient for a label. Missing evidence is not a positive result.</p><p>Response counts vary by question. Small lecturer and administrative groups provide context, not a representative benchmark. Associations and possible explanations require further investigation.</p>
+          <button type="button" className="btn--link" onClick={() => onNavigate('perspectives')}>Compare the sources →</button>
         </div>
       </div>
-
-      <p className="viewer-line">
-        {impact && submission ? <ViewerLine impact={impact} onOpenFinding={onOpenFinding} /> : 'No response from you is included in this evidence base. The analysis reads the simulated base alone.'}
-      </p>
-    </div>
-  );
-};
-
-const ViewerLine = ({ impact, onOpenFinding }: { impact: ViewerImpact; onOpenFinding: (id: string) => void }) => {
-  const noun = groupNouns[impact.role].plural;
-  const changed = impact.changedFindings;
-  const div = impact.divergences[0];
-  return (
-    <>
-      Your response is 1 of {impact.groupN} {noun} responses. It shifted {impact.shifts.length} indicator value{impact.shifts.length === 1 ? '' : 's'} by ≤{impact.maxAbsDelta.toFixed(2)} and{' '}
-      {changed.length === 0 ? (
-        'changed no finding'
-      ) : (
-        <>
-          changed {changed.length} finding{changed.length === 1 ? '' : 's'} (
-          {changed.map((id, i) => (
-            <span key={id}>
-              {i > 0 && ', '}
-              <button type="button" className="btn--link" onClick={() => onOpenFinding(id)}>
-                {id}
-              </button>
-            </span>
-          ))}
-          : the rule no longer fires with your response included)
-        </>
-      )}
-      .
-      {div && div.findingId && (
-        <>
-          {' '}
-          Your answer on {indicatorById(div.indicatorId).label.toLowerCase()} ({questionById(div.questionId).id}) sits apart from the cohort at {div.viewerValue} against {f1(div.cohortMean)}.{' '}
-          <button type="button" className="btn--link" onClick={() => onOpenFinding(div.findingId!)}>
-            See the distribution
-          </button>
-          .
-        </>
-      )}
-    </>
-  );
+      <p className="analysis-contribution">{impact && submission ? <>Your response is one of {impact.groupN} {groupNouns[impact.role].plural} responses. It {impact.changedFindings.length ? `changed the supported status of ${impact.changedFindings.length} finding${impact.changedFindings.length === 1 ? '' : 's'}` : 'did not change which findings meet the rules'}. Your individual experience remains part of the evidence.</> : 'You are viewing the simulated evidence base. No response from you is included.'}</p>
+    </section>
+  </div>;
 };

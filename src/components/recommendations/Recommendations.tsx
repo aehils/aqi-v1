@@ -1,123 +1,37 @@
 import type { Dataset } from '../../engine/dataset';
-import { recommendations } from '../../data/recommendations';
-import { findingById } from '../../data/findings';
-import { rankRecommendations } from '../../engine/session';
-import { resolveMetric, categoricalFor } from '../../engine/aggregate';
-import type { MetricSpec } from '../../data/types';
-import { withUnit } from '../../lib/format';
+import { buildCourseAnalysis } from '../../engine/courseAnalysis';
+import { actionPlanMarkdown, actionMetric } from '../../engine/actionPlan';
+import { actionTitles } from '../../data/analysisPresentation';
+import { course } from '../../data/course';
 
-const current = (dataset: Dataset, metric: MetricSpec, unit?: string): string => {
-  if (metric.kind === 'categorical') return categoricalFor(dataset, metric.indicatorId, metric.group, metric.map).modal;
-  return withUnit(resolveMetric(dataset, metric), unit);
-};
-
-/** Finding → Diagnosis → Action → Owner → Evidence to re-measure → Target → Review point, ranked on a stated basis. */
 export const Recommendations = ({ dataset, onOpenFinding }: { dataset: Dataset; onOpenFinding: (id: string) => void }) => {
-  const ranked = rankRecommendations(dataset);
-  return (
-    <div className="column">
-      <p className="section-label">Recommendations</p>
-      <h1 className="screen-title">Closing the loop.</h1>
-      <p className="screen-lede">
-        Ranked by strength of evidence × breadth of cohort affected: the number of independent source types behind the finding, multiplied by the share of the cohort the action reaches. The basis is shown on each item; there is no hidden priority number.
-      </p>
-
-      {ranked.map((rk, i) => {
-        const r = recommendations.find((x) => x.id === rk.id)!;
-        const f = findingById(r.findingId);
-        return (
-          <article className="rec" key={r.id}>
-            <div className="rec__head">
-              <span className="rec__rank">{i + 1}</span>
-              <h3>{f.title}</h3>
-              <span className="rec__basis">
-                {r.id} · {rk.basis}
-              </span>
-            </div>
-            <dl className="loop">
-              <dt>Finding</dt>
-              <dd>
-                <button type="button" className="btn--link" onClick={() => onOpenFinding(f.id)}>
-                  {f.id} · {f.headline}
-                </button>
-              </dd>
-              <dt>Diagnosis (hypothesis)</dt>
-              <dd>{r.diagnosis}</dd>
-              <dt>Recommended action</dt>
-              <dd>{r.action}</dd>
-              <dt>Owner</dt>
-              <dd>{r.owner}</dd>
-              <dt>Evidence to re-measure</dt>
-              <dd>
-                <div className="table-scroll">
-                  <table className="data">
-                    <thead>
-                      <tr>
-                        <th>Metric</th>
-                        <th className="num">This cycle</th>
-                        <th>Target</th>
-                        <th className="num">Next cycle</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {r.remeasure.map((m) => (
-                        <tr key={m.label}>
-                          <td>{m.label}</td>
-                          <td className="num">{current(dataset, m.metric, m.unit)}</td>
-                          <td>{m.target}</td>
-                          <td className="num empty-state">awaiting</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </dd>
-              <dt>Target</dt>
-              <dd>{r.target}</dd>
-              <dt>Review point</dt>
-              <dd>{r.reviewPoint}</dd>
-            </dl>
-          </article>
-        );
-      })}
-
-      <hr className="hairline" />
-      <p className="section-label">Re-measurement</p>
-      <h2 className="serif" style={{ fontSize: 24, marginBottom: 8 }}>
-        What AQIP compares next cycle
-      </h2>
-      <p className="muted" style={{ marginBottom: 24, maxWidth: '70ch' }}>
-        Each metric below is re-derived from the same sources next cycle and set against this cycle&apos;s value and its target. The comparison is empty until that measurement exists.
-      </p>
-      <div className="table-scroll">
-        <table className="data">
-          <thead>
-            <tr>
-              <th>Metric</th>
-              <th>Recommendation</th>
-              <th className="num">This cycle</th>
-              <th>Target</th>
-              <th className="num">Next cycle</th>
-              <th>Did it improve?</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ranked.flatMap((rk) => {
-              const r = recommendations.find((x) => x.id === rk.id)!;
-              return r.remeasure.map((m) => (
-                <tr key={`${r.id}-${m.label}`}>
-                  <td>{m.label}</td>
-                  <td>{r.id}</td>
-                  <td className="num">{current(dataset, m.metric, m.unit)}</td>
-                  <td>{m.target}</td>
-                  <td className="num empty-state">—</td>
-                  <td className="empty-state">Awaiting next measurement cycle</td>
-                </tr>
-              ));
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+  const { actions, inactive } = buildCourseAnalysis(dataset);
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([actionPlanMarkdown(dataset)], { type: 'text/markdown;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${course.code.replace(/\s+/g, '-')}-proposed-action-plan.md`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  return <div className="column analysis-page">
+    <header className="analysis-heading"><p className="section-label">Course analysis · Action plan</p><h1>Turn findings into improvements.</h1><p>Each proposal identifies a next step, an owner to involve and a way to check progress. These are discussion proposals; no action has been assigned or completed.</p></header>
+    <div className="analysis-plan-summary"><div><strong>{actions.length} proposed {actions.length === 1 ? 'action' : 'actions'}</strong><p>Only actions linked to currently supported findings are shown. Planning order considers evidence coverage and the share of students reached.</p></div><button type="button" className="btn" disabled={!actions.length} onClick={download}>Download action plan ↓</button></div>
+    {actions.map((a, i) => <article className="analysis-action-card" key={a.id}>
+      <div className="analysis-action-heading"><span className="analysis-action-number">{i + 1}</span><div><p className="report-kicker">Proposed action · {a.id}</p><h2>{actionTitles[a.id]}</h2></div></div>
+      <p className="analysis-action-text">{a.recommendation.action}</p>
+      <dl className="analysis-action-meta"><div><dt>Owner to involve</dt><dd>{a.recommendation.owner}</dd></div><div><dt>Review point</dt><dd>{a.recommendation.reviewPoint}</dd></div></dl>
+      <details className="analysis-disclosure"><summary>How we would know it is working</summary><div>
+        <p>{a.recommendation.target}</p>
+        <div className="analysis-targets">{a.recommendation.remeasure.map(m => <div key={m.label}><h3>{m.label}</h3><span><small>Current</small><strong>{actionMetric(dataset, m.metric, m.unit)}</strong></span><span><small>Target</small><strong>{m.target}</strong></span></div>)}</div>
+        <p className="analysis-small">Next-cycle evidence has not been collected. Progress cannot yet be assessed.</p>
+      </div></details>
+      <details className="analysis-disclosure"><summary>Why this action is proposed</summary><div><p><strong>Possible explanation:</strong> {a.recommendation.diagnosis}</p><p className="analysis-small">Planning basis: {a.basis}. Source coverage does not establish certainty or prove the explanation.</p></div></details>
+      <button type="button" className="btn--link" onClick={() => onOpenFinding(a.findingId)}>Inspect the supporting finding →</button>
+    </article>)}
+    {!actions.length && <p className="analysis-empty">No action-linked findings currently meet the evidence rules. Review the evidence before choosing an intervention.</p>}
+    {inactive.length > 0 && <p className="analysis-small">Actions for findings that no longer meet their rules are excluded. Those findings remain available in All findings.</p>}
+  </div>;
 };

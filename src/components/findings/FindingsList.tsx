@@ -1,40 +1,30 @@
+import { useState } from 'react';
 import type { Dataset } from '../../engine/dataset';
-import { findings } from '../../data/findings';
-import { evaluateTrigger } from '../../engine/triggers';
-import { constructBand } from '../../engine/bands';
-import { constructById } from '../../data/constructs';
+import { buildCourseAnalysis } from '../../engine/courseAnalysis';
+import { FindingSummary } from '../intelligence/FindingSummary';
+import { analysisCopy } from '../../data/analysisPresentation';
 import { domainById } from '../../data/domains';
-import { sourceLabel } from '../../data/indicators';
-import { BandTag } from '../shell/BandTag';
 
-const kindLabel = { problem: 'Finding', strength: 'Strength', relationship: 'Relationship to investigate' } as const;
-
-export const FindingsList = ({ dataset, onOpenFinding }: { dataset: Dataset; onOpenFinding: (id: string) => void; onOpenConstruct: (id: string) => void }) => (
-  <div className="column">
-    <p className="section-label">Findings</p>
-    <h1 className="screen-title">What the evidence shows, and the rule that said so.</h1>
-    <p className="screen-lede">Each finding is authored; its evidence bindings and values are computed. Open one to see the rule that fired with its live terms, the contributing indicators, the underlying evidence and the construct lineage.</p>
-    <div className="findings">
-      {findings.map((f) => {
-        const ev = evaluateTrigger(f, dataset);
-        const sources = Array.from(new Set(f.constructIds.flatMap((c) => constructBand(dataset, c).sourceTypes)));
-        return (
-          <button key={f.id} type="button" className="fcard" onClick={() => onOpenFinding(f.id)} aria-label={`Open finding ${f.id}: ${f.title}`}>
-            <span className="fcard__meta">
-              <span>{f.id}</span>
-              <span>{kindLabel[f.kind]}</span>
-              <span>{f.domainIds.map((d) => `Domain ${domainById(d).number}`).join(' · ')}</span>
-              <span>{f.constructIds.map((c) => constructById(c).name).join(' · ')}</span>
-              {f.kind === 'relationship' ? <span className="chip">Association</span> : <BandTag band={constructBand(dataset, f.lineage.constructId).band} />}
-              {!ev.fires && <span className="nearmiss">Rule did not fire with the current evidence base</span>}
-            </span>
-            <h3>{f.title}</h3>
-            <span className="fcard__open">Open →</span>
-            <span className="fcard__headline">{f.headline}</span>
-            <span className="fcard__sources">Sources: {sources.map((s) => sourceLabel[s]).join(' · ')}</span>
-          </button>
-        );
-      })}
+export const FindingsList = ({ dataset, onOpenFinding }: { dataset: Dataset; onOpenFinding: (id: string) => void; onOpenConstruct: (id: string) => void }) => {
+  const analysis = buildCourseAnalysis(dataset);
+  const [filter, setFilter] = useState('current');
+  const [query, setQuery] = useState('');
+  const groups = [
+    { id: 'current', label: 'All current', findings: analysis.supported },
+    { id: 'problem', label: 'Needs attention', findings: analysis.concerns },
+    { id: 'strength', label: 'Strengths', findings: analysis.strengths },
+    { id: 'relationship', label: 'To investigate', findings: analysis.questions },
+    { id: 'inactive', label: 'Not currently supported', findings: analysis.inactive },
+  ];
+  const visible = groups.find(g => g.id === filter)!.findings.filter(f =>
+    `${f.title} ${analysisCopy[f.id]?.title ?? ''} ${f.headline} ${f.domainIds.map(d => domainById(d).name).join(' ')}`.toLowerCase().includes(query.trim().toLowerCase()));
+  return <div className="column analysis-page">
+    <header className="analysis-heading"><p className="section-label">Course analysis · All findings</p><h1>Explore what the evidence supports.</h1><p>Separate concerns, strengths and questions that need investigation. A finding’s status comes from the current evidence; a missing finding is not proof that everything is working.</p></header>
+    <div className="analysis-toolbar"><div className="analysis-filters" role="group" aria-label="Filter findings">{groups.map(g => <button type="button" key={g.id} aria-pressed={filter === g.id} onClick={() => setFilter(g.id)}>{g.label} <span>{g.findings.length}</span></button>)}</div>
+      <label className="analysis-search">Find a topic<input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Feedback, resources, assessment…" /></label>
     </div>
-  </div>
-);
+    <p className="analysis-small" role="status">{visible.length} {visible.length === 1 ? 'finding' : 'findings'} shown</p>
+    <div className="analysis-finding-grid">{visible.map(f => <FindingSummary key={f.id} finding={f} dataset={dataset} onOpenFinding={onOpenFinding} inactive={filter === 'inactive'} />)}</div>
+    {!visible.length && <p className="analysis-empty">No findings match this view. Choose another category or clear the search.</p>}
+  </div>;
+};
