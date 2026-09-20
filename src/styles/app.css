@@ -494,14 +494,15 @@ table.data th:last-child {
 .entry h1 {
   font-size: 50px;
   font-weight: 500;
-  max-width: 17ch;
+  max-width: 20ch;
   margin: 0;
 }
 
 .entry__lede {
   font-size: 16px;
   color: var(--ink-muted);
-  max-width: 54ch;
+  /* The grid track sets the measure here, not a ch cap. */
+  max-width: none;
 }
 
 .entry__lede + .entry__lede {
