@@ -46,7 +46,7 @@ export const Assembly = ({ submission, onDone }: { submission: ViewerSubmission;
       {done && (
         <div>
           <p className="assembly__collated">
-            Your results have collated, and a report has been generated on the quality of your course.
+            Your responses have been collated, and your report is ready. The analysis of the course itself follows it.
           </p>
           <button type="button" className="btn" onClick={onDone} autoFocus>
             Read your report
