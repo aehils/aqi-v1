@@ -21,9 +21,9 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
           <div className="shell__course">
             {course.code} — {course.title}
             <span className="sep" aria-hidden="true">|</span>
-            {course.institution}
-            <span className="sep" aria-hidden="true">|</span>
             {sessionSemester}, {sessionYear}
+            <span className="sep" aria-hidden="true">|</span>
+            {course.institution}
           </div>
         </div>
       </header>

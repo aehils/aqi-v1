@@ -113,7 +113,7 @@ td.num,
 .shell__course {
   flex: 1;
   min-width: 0;
-  text-align: center;
+  text-align: right;
   color: var(--ink-muted);
   font-size: 13px;
   white-space: nowrap;
