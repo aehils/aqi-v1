@@ -7,7 +7,7 @@ import { BandTag } from '../shell/BandTag';
 import { sourceLabel } from '../../data/indicators';
 
 /** The quality profile: seven domains, a band each, derivation on request. No score, no numbers on the face. */
-export const DomainProfile = ({ dataset }: { dataset: Dataset }) => {
+export const DomainProfile = ({ dataset, onOpenConstruct }: { dataset: Dataset; onOpenConstruct: (id: string) => void }) => {
   const bands = allDomainBands(dataset);
   const [open, setOpen] = useState<string | null>(null);
   return (
@@ -18,18 +18,18 @@ export const DomainProfile = ({ dataset }: { dataset: Dataset }) => {
         const isOpen = open === b.domainId;
         return (
           <div key={b.domainId}>
-            <button type="button" className="profile__row" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : b.domainId)}>
+            <button type="button" className="profile__row" aria-expanded={isOpen} aria-controls={`domain-${b.domainId}`} onClick={() => setOpen(isOpen ? null : b.domainId)}>
               <span>
                 <span className="profile__name">{d.name}</span>
                 <span className="profile__question">{d.coreQuestion}</span>
               </span>
               <span className="profile__evidence">
-                {b.evidenced} of {total} constructs evidenced
+                {b.evidenced} of {total} aspects measured
               </span>
               <BandTag band={b.band} title={b.derivation} />
             </button>
             {isOpen && (
-              <div className="profile__detail">
+              <div className="profile__detail" id={`domain-${b.domainId}`}>
                 <p>
                   <strong>{bandLabel[b.band]}.</strong> {bandMeaning[b.band]} Derivation: {b.derivation}.
                 </p>
@@ -37,16 +37,14 @@ export const DomainProfile = ({ dataset }: { dataset: Dataset }) => {
                   {b.constructs.map((cb) => {
                     const c = constructById(cb.constructId);
                     const sources = cb.sourceTypes.map((s) => sourceLabel[s]).join(', ');
-                    const ns = cb.readings.filter((r) => r.n !== null).map((r) => r.n as number);
                     return (
                       <li key={cb.constructId}>
                         <span>
-                          {c.name}
+                          <button type="button" className="btn--link" onClick={() => onOpenConstruct(c.id)}>{c.name} →</button>
                           <span className="muted small">
                             {' '}
                             · {cb.sourceTypes.length} source{cb.sourceTypes.length === 1 ? '' : 's'}
                             {sources ? ` (${sources})` : ''}
-                            {ns.length ? ` · n ${Math.max(...ns)}` : ''}
                           </span>
                         </span>
                         <span className="small muted">{bandLabel[cb.band]}</span>
@@ -55,7 +53,7 @@ export const DomainProfile = ({ dataset }: { dataset: Dataset }) => {
                   })}
                 </ul>
                 <p className="small muted" style={{ marginTop: 12 }}>
-                  {b.notInstrumented} further construct{b.notInstrumented === 1 ? '' : 's'} in this domain {b.notInstrumented === 1 ? 'is' : 'are'} not instrumented in this demo.
+                  {b.notInstrumented} further aspect{b.notInstrumented === 1 ? '' : 's'} in this domain {b.notInstrumented === 1 ? 'is' : 'are'} not measured in this demo. Sample sizes are shown for each source when you open an aspect.
                 </p>
               </div>
             )}

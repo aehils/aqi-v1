@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "preview": "vite preview",
-    "check": "tsx scripts/check-engine.ts"
+    "check": "tsx scripts/check-engine.ts",
+    "check:report": "tsx scripts/check-report.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

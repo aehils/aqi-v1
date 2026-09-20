@@ -3,10 +3,10 @@ import { inquiryFraming } from '../../data/inquiry';
 import { withUnit } from '../../lib/format';
 
 const statusLabel: Record<string, string> = {
-  intact: 'Holds',
-  weak: 'Weak',
-  cut: 'Cut',
-  unread: 'Not read',
+  intact: 'Meets threshold',
+  weak: 'Below target',
+  cut: 'Below minimum',
+  unread: 'Insufficient evidence',
 };
 
 /** The transfer chain, in order, with the first break marked. */
@@ -23,15 +23,16 @@ export const ChainView = ({ chain, evidenced }: { chain: ChainReading[]; evidenc
               <h3>
                 {r.link.name}
                 <span className={`chain-link__tag chain-link__tag--${r.status}`}>{statusLabel[r.status]}</span>
-                {evidenced?.includes(r.link.id) && <span className="tag-mini">your evidence counts here</span>}
+                {evidenced?.includes(r.link.id) && <span className="tag-mini">your track covers this topic</span>}
               </h3>
               <p className="chain-link__q">{r.link.question}</p>
               <p className="chain-link__value">
                 <span className="figure">{withUnit(r.value, r.link.unit)}</span> — {r.link.reading}
               </p>
+              <p className="report-footnote">Model thresholds: target {r.link.direction === 'higher' ? '≥' : '≤'} {withUnit(r.link.intact, r.link.unit)}; below minimum when {r.link.direction === 'higher' ? '<' : '>'} {withUnit(r.link.cut, r.link.unit)}.</p>
               {i === firstBreakIndex && (
                 <p className="chain-link__break">
-                  First break in the chain. Nothing downstream of this link can be read as sound while it is cut, whatever the downstream numbers say.
+                  First stage below the model’s minimum threshold. This identifies a place to investigate, not a proven root cause. Later stages retain their own evidence.
                 </p>
               )}
             </div>
