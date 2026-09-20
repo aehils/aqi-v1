@@ -493,7 +493,7 @@ table.data th:last-child {
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: var(--s5) var(--s10);
   align-items: start;
-  margin-bottom: var(--s10);
+  margin-bottom: calc(var(--s10) * 1.75);
 }
 
 .entry h1 {
