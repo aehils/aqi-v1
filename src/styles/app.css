@@ -919,7 +919,9 @@ table.data th:last-child {
 .q-text {
   font-size: 28px;
   line-height: 1.28;
-  margin-bottom: var(--s1);
+  /* Separates the question from whatever answers it: the note when there
+     is one, the options otherwise. */
+  margin-bottom: var(--s3);
 }
 
 .q-note {
