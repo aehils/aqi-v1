@@ -113,7 +113,7 @@ td.num,
 .shell__course {
   flex: 1;
   min-width: 0;
-  text-align: center;
+  text-align: right;
   color: var(--ink-muted);
   font-size: 13px;
   white-space: nowrap;
@@ -156,6 +156,16 @@ td.num,
   background: var(--evidence);
 }
 
+.simulated--entry {
+  background: transparent;
+  color: var(--positive);
+  border-color: var(--positive);
+}
+
+.simulated--entry::before {
+  background: var(--positive);
+}
+
 .nav {
   border-bottom: 1px solid var(--line);
   background: var(--surface);
@@ -186,11 +196,16 @@ td.num,
 
 .shell__main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .column {
   max-width: var(--column);
   margin: 0 auto;
+  /* .shell__main is a flex column, so an auto-margined item would
+     shrink to its content width instead of filling the page. */
+  width: 100%;
   padding: var(--s8) var(--margin) var(--s10);
 }
 
@@ -205,6 +220,7 @@ td.num,
   font-size: 12px;
   color: var(--ink-muted);
   display: flex;
+  align-items: center;
   gap: var(--s2);
   flex-wrap: wrap;
 }
@@ -454,64 +470,95 @@ table.data th:last-child {
 
 /* ---------- Entry ---------- */
 
-.entry {
-  min-height: calc(100vh - 64px - 78px);
+.entry,
+.screen {
+  /* This screen never scrolls: .shell__main is the flex remainder of a
+     100vh shell, and the entry column fills it. No measured offsets. */
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  padding-top: var(--s10);
+  padding-bottom: var(--s6);
 }
 
-.entry__hero {
+/* The role screen sits under the header bar, so it needs less top air
+   than the landing page, which has none. */
+.screen {
+  padding-top: var(--s6);
+  /* Same bottom inset as the landing page, so every screen's buttons
+     sit on one line across the flow. */
+  padding-bottom: var(--s6);
+}
+
+/* Content-dense screens keep a tighter hero than the landing page. */
+.screen .screen__hero {
+  margin-bottom: var(--s6);
+}
+
+.entry__eyebrow,
+.screen__eyebrow {
+  margin-top: var(--s2);
+}
+
+.entry__hero,
+.screen__hero {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: var(--s5) var(--s10);
   align-items: start;
-  margin-bottom: var(--s6);
+  /* Minimum gap; .entry-form's auto margin takes whatever else is free. */
+  margin-bottom: var(--s4);
 }
 
 .entry h1 {
   font-size: 50px;
   font-weight: 500;
-  max-width: 17ch;
-  margin: var(--s1) 0 0;
+  max-width: 20ch;
+  margin: 0;
 }
 
 .entry__lede {
-  font-size: 17px;
+  font-size: 16px;
   color: var(--ink-muted);
-  max-width: 54ch;
+  /* The grid track sets the measure here, not a ch cap. */
+  max-width: none;
 }
 
 .entry__lede + .entry__lede {
   margin-top: var(--s2);
 }
 
-.chain {
+/* Anchors a screen's action block to the bottom without ever
+   overflowing it: auto margins only absorb free space. */
+.screen__tail {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+/* The questionnaire keeps its single reading column, but fills the
+   screen the same way so its actions sit at the bottom edge. */
+.screen > .q-wrap {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin-bottom: var(--s6);
-  font-size: 13px;
+  flex-direction: column;
+  max-width: var(--measure);
+  width: 100%;
 }
 
-.chain__step {
-  color: var(--ink);
+.q-section {
+  margin-bottom: var(--s4);
 }
 
-.chain__sep {
-  color: var(--evidence);
-}
-
-.chain__note {
-  margin-left: auto;
-  color: var(--ink-muted);
+.q-wrap .q-note {
+  margin-bottom: var(--s4);
 }
 
 .entry-form {
+  /* Anchors the form and button to the bottom of the screen without
+     ever overflowing it: auto margins only absorb free space. */
+  margin-top: auto;
   display: flex;
   flex-wrap: wrap;
   gap: var(--s3);
@@ -550,7 +597,8 @@ table.data th:last-child {
 }
 
 @media (max-width: 940px) {
-  .entry__hero {
+  .entry__hero,
+  .screen__hero {
     grid-template-columns: 1fr;
   }
   .entry h1 {
@@ -568,20 +616,33 @@ table.data th:last-child {
 
 .screen-lede {
   color: var(--ink-muted);
-  max-width: 84ch;
-  margin-bottom: var(--s6);
   font-size: 16px;
+}
+
+.screen__hero .screen-lede + .screen-lede {
+  margin-top: var(--s2);
+}
+
+.screen .screen-title {
+  font-size: 40px;
+  margin-bottom: 0;
+  max-width: 20ch;
+}
+
+.screen__tail .role-hint {
+  margin-bottom: 0;
 }
 
 .role-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 300px));
+  grid-template-columns: repeat(2, minmax(0, 260px));
   gap: var(--s2);
   margin-bottom: var(--s3);
 }
 
 .role-card {
-  aspect-ratio: 1 / 1;
+  /* Height tracks the viewport so the screen still never scrolls. */
+  height: clamp(180px, 26vh, 260px);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -599,6 +660,31 @@ table.data th:last-child {
   border-color: var(--accent);
 }
 
+.role-card__icon {
+  /* One asset, recoloured through a mask: grey at rest, green on hover. */
+  /* Auto margins centre it in the space above the name. */
+  margin: auto;
+  width: 72px;
+  height: 72px;
+  background-color: var(--evidence);
+  transition: background-color var(--t);
+}
+
+.role-card__icon--student {
+  -webkit-mask: url('../assets/graduate.png') no-repeat center / contain;
+  mask: url('../assets/graduate.png') no-repeat center / contain;
+}
+
+.role-card__icon--faculty {
+  -webkit-mask: url('../assets/lecturer.png') no-repeat center / contain;
+  mask: url('../assets/lecturer.png') no-repeat center / contain;
+}
+
+.role-card:hover .role-card__icon,
+.role-card:focus-visible .role-card__icon {
+  background-color: var(--positive);
+}
+
 .role-card__name {
   font-family: var(--serif);
   font-size: 25px;
@@ -606,6 +692,7 @@ table.data th:last-child {
 }
 
 .role-hint {
+  /* Reserved height so the fading hint never shifts the cards. */
   min-height: 42px;
   color: var(--ink-muted);
   font-size: 13.5px;
@@ -613,12 +700,34 @@ table.data th:last-child {
   margin-bottom: var(--s5);
 }
 
+.role-hint__text {
+  animation: hint-fade 220ms ease both;
+}
+
+@keyframes hint-fade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .role-hint__text {
+    animation: none;
+  }
+}
+
 @media (max-width: 880px) {
   .role-grid {
     grid-template-columns: 1fr;
   }
   .role-card {
-    aspect-ratio: auto;
+    height: auto;
+    min-height: 140px;
   }
 }
 
@@ -723,6 +832,33 @@ table.data th:last-child {
   margin-bottom: var(--s2);
 }
 
+/* A plain record, not a card: hairline rows that sit on the canvas the
+   way the landing page's fields do. */
+.record {
+  margin: 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.record__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.record dt {
+  color: var(--ink-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.record dd {
+  margin: 0;
+  text-align: right;
+}
+
 /* ---------- Questionnaire ---------- */
 
 .q-head {
@@ -795,7 +931,9 @@ table.data th:last-child {
   display: flex;
   align-items: center;
   gap: var(--s2);
-  margin-top: var(--s4);
+  /* Spacing comes from .screen__tail's auto margin, which this rule
+     would otherwise override by appearing later in the sheet. */
+  margin-top: auto;
 }
 
 .q-hint {

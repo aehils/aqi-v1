@@ -10,30 +10,24 @@ const tabs: { id: Tab; label: string }[] = [
   { id: 'recommendations', label: 'Recommendations' },
 ];
 
+const [sessionYear, sessionSemester] = course.session.split(', ');
+
 export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View; tab: Tab; onTab: (t: Tab) => void; onRestart: () => void; children: ReactNode }) => (
   <div className="shell">
-    <header className="shell__header">
-      <div className="shell__header-inner">
-        <div>
+    {view !== 'entry' && (
+      <header className="shell__header">
+        <div className="shell__header-inner">
           <span className="wordmark">AQIP</span>
-          <span className="wordmark__sub">Academic Quality Intelligence Platform</span>
-        </div>
-        {view !== 'entry' && (
           <div className="shell__course">
             {course.code} — {course.title}
-            <span className="header-detail">
-              <span className="sep" aria-hidden="true">|</span>
-              {course.department}, {course.institution}
-              <span className="sep" aria-hidden="true">|</span>
-              {course.session}
-            </span>
+            <span className="sep" aria-hidden="true">|</span>
+            {sessionSemester}, {sessionYear}
+            <span className="sep" aria-hidden="true">|</span>
+            {course.institution}
           </div>
-        )}
-        <span className="simulated" title="All institutional data, records, artefacts and responses in this demo are simulated.">
-          Simulated data
-        </span>
-      </div>
-    </header>
+        </div>
+      </header>
+    )}
     {view === 'intelligence' && (
       <nav className="nav" aria-label="Intelligence views">
         <div className="nav__inner">
@@ -48,7 +42,12 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
     <main className="shell__main">{children}</main>
     <footer className="shell__footer">
       <div className="shell__footer-inner">
-        <span>Simulated data. {course.institution} is a fictional institution.</span>
+        <span
+          className="simulated simulated--entry"
+          title="All institutional data, records, artefacts and responses in this demo are simulated."
+        >
+          Simulated data
+        </span>
         <span>
           This demo instruments {instrumentedCount} of {constructCount} constructs in the AQIP model.
         </span>

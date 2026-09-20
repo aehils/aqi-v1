@@ -31,15 +31,15 @@
   --s10: 80px;
 
   --radius: 6px;
-  --column: 1320px;
+  --column: 1480px;
   --measure: 920px;
-  --margin: 48px;
+  --margin: 32px;
   --shadow-drawer: 0 12px 40px rgba(15, 27, 45, 0.12);
   --t: 150ms ease;
 }
 
 @media (max-width: 900px) {
   :root {
-    --margin: 24px;
+    --margin: 20px;
   }
 }
