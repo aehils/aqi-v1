@@ -1,7 +1,7 @@
 import type { AnswerValue, Role } from '../data/types';
 import type { ViewerSubmission } from '../engine/session';
 
-export type View = 'entry' | 'role' | 'context' | 'questionnaire' | 'assembly' | 'intelligence';
+export type View = 'entry' | 'role' | 'context' | 'questionnaire' | 'assembly' | 'report' | 'intelligence';
 export type Tab = 'overview' | 'perspectives' | 'findings' | 'recommendations';
 
 export interface State {
@@ -26,6 +26,7 @@ export type Action =
   | { type: 'TOGGLE_LENS' }
   | { type: 'SUBMIT' }
   | { type: 'ASSEMBLY_DONE' }
+  | { type: 'REPORT_DONE' }
   | { type: 'SET_TAB'; tab: Tab }
   | { type: 'OPEN_FINDING'; id: string | null }
   | { type: 'OPEN_CONSTRUCT'; id: string | null }
@@ -66,6 +67,8 @@ export const reducer = (state: State, action: Action): State => {
       if (!state.role) return state;
       return { ...state, view: 'assembly', submission: { role: state.role, answers: state.answers } };
     case 'ASSEMBLY_DONE':
+      return { ...state, view: 'report' };
+    case 'REPORT_DONE':
       return { ...state, view: 'intelligence', tab: 'overview' };
     case 'SET_TAB':
       return { ...state, tab: action.tab, openFindingId: null, openConstructId: null };

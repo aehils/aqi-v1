@@ -12,6 +12,9 @@ import { questionById, groupNouns } from '../../instruments';
 import { DomainProfile } from './DomainProfile';
 import { BandTag } from '../shell/BandTag';
 import { f1, withUnit, share } from '../../lib/format';
+import { ChainView } from '../report/ChainView';
+import { readChain, firstBreak } from '../../engine/report';
+import { overarchingQuestion } from '../../data/inquiry';
 
 const kindLabel: Record<string, string> = {
   problem: 'Finding',
@@ -40,6 +43,8 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding }: { datas
     relationship: firing.filter((f) => f.kind === 'relationship').length,
   };
   const notFiring = findings.length - firing.length;
+  const chain = readChain(dataset);
+  const broken = firstBreak(dataset);
 
   return (
     <div className="column">
@@ -69,7 +74,7 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding }: { datas
             <dd>{n.student}</dd>
             <dt>Lecturer responses</dt>
             <dd>{n.faculty}</dd>
-            <dt>Administrative responses</dt>
+            <dt>Administrative returns</dt>
             <dd>{n.institution}</dd>
             <dt>Feedback records</dt>
             <dd>{derived('feedback.turnaround.n')}</dd>
@@ -80,6 +85,19 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding }: { datas
           </dl>
           <p>Plus the curriculum document, the LMS extract and the records office return. Every figure on this page resolves from these sources.</p>
         </aside>
+      </div>
+
+      <div className="block">
+        <p className="section-label">The question, read against this course</p>
+        <div className="inquiry-banner">
+          <p className="inquiry-banner__q">{overarchingQuestion}</p>
+          {broken && (
+            <p className="inquiry-banner__note">
+              For BCH 305 the chain first breaks at link {broken.link.step}, {broken.link.name.toLowerCase()}: {broken.link.question.toLowerCase()} Everything downstream is read in that light.
+            </p>
+          )}
+        </div>
+        <ChainView chain={chain} />
       </div>
 
       <div className="block">

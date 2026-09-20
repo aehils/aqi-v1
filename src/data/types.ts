@@ -29,7 +29,11 @@ export type EvidenceType =
   | 'record'
   | 'variable';
 
-export type Role = SourceGroup;
+/**
+ * A participant track. Administrative staff remain a SourceGroup — their
+ * declared policy is still evidence — but they are not a track a viewer runs.
+ */
+export type Role = Exclude<SourceGroup, 'institution'>;
 
 export interface Domain {
   id: DomainId;
@@ -58,6 +62,11 @@ export interface Option {
   value?: number;
   /** false for escape options ("Not sure", "I have not received feedback"). */
   scoring?: boolean;
+  /**
+   * For validator items: the value on the primary item's 1-5 scale that this
+   * answer implies. Set only on questions carrying `validates`.
+   */
+  implies?: number;
 }
 
 export interface Question {
@@ -72,7 +81,20 @@ export interface Question {
   indicatorId?: string;
   constructId?: string;
   whyThisRespondent?: string;
+  /** Question id this item validates. Validator items are never aggregated as indicators. */
+  validates?: string;
+  /** How the validator relates to the item it checks. */
+  validationKind?: ValidationKind;
 }
+
+/**
+ * How a validator item checks the item it is paired with. All three ask about
+ * the same construct by a different route, so the two answers can be placed on
+ * one scale and compared.
+ */
+export type ValidationKind = 'behavioural-anchor' | 'recall-anchor' | 'consequence-anchor';
+
+export type ValidationStatus = 'corroborated' | 'marginal' | 'contradicted' | 'unscored';
 
 export type AnswerValue = string | string[] | Record<string, string>;
 

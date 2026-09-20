@@ -1,12 +1,16 @@
-import type { Question, Role } from '../data/types';
+import type { Question, Role, SourceGroup } from '../data/types';
 import { studentQuestions } from './student';
 import { facultyQuestions } from './faculty';
 import { institutionQuestions } from './institution';
 
+/**
+ * The instruments a viewer can run. Administrative staff are an evidence
+ * source, not a participant track: their instrument is still aggregated from
+ * the seeded returns below, but nobody completes it here.
+ */
 export const instruments: Record<Role, Question[]> = {
   student: studentQuestions,
   faculty: facultyQuestions,
-  institution: institutionQuestions,
 };
 
 export const allQuestions: Question[] = [...studentQuestions, ...facultyQuestions, ...institutionQuestions];
@@ -22,11 +26,18 @@ export const questionForIndicator = (indicatorId: string): Question | undefined 
 export const roleLabels: Record<Role, string> = {
   student: 'Student',
   faculty: 'Lecturer',
-  institution: 'Academic / Administrative Staff',
+};
+
+/** Display names for every group that appears as evidence, whether or not it is a track. */
+export const groupLabels: Record<SourceGroup, string> = {
+  ...roleLabels,
+  institution: 'Academic / administrative staff',
 };
 
 export const groupNouns: Record<Role, { singular: string; plural: string }> = {
   student: { singular: 'student', plural: 'student' },
   faculty: { singular: 'lecturer', plural: 'lecturer' },
-  institution: { singular: 'administrative', plural: 'administrative' },
 };
+
+/** Validator items are asked of the viewer but never aggregated as indicators. */
+export const validatorQuestions = (role: Role): Question[] => instruments[role].filter((q) => Boolean(q.validates));

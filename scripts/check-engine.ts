@@ -9,6 +9,8 @@ import { evaluateTrigger } from '../src/engine/triggers';
 import { buildDataset, computeViewerImpact, rankRecommendations } from '../src/engine/session';
 import { constructs } from '../src/data/constructs';
 import { categoricalMaps } from '../src/data/readings';
+import { allCohortValidation, checkAnswers, summarise } from '../src/engine/validate';
+import { readChain } from '../src/engine/report';
 
 const ds = seedDataset;
 const f1 = (x: number) => x.toFixed(2);
@@ -17,14 +19,18 @@ const check = (label: string, value: number, expect: number, tol = 0.06) => {
   console.log(`${ok ? 'ok ' : 'XX '} ${label.padEnd(44)} ${f1(value)}  (expect ${expect})`);
 };
 
+// The four forced-choice student items carry expectations re-derived after the
+// midpoint was removed: the brief's five-point marginals are redistributed by
+// splitMidpoint() in responses.student.ts, and these are the means that
+// redistribution produces. The five-point items keep the brief's values.
 console.log('--- students n=' + ds.responses.student.length);
-check('IND-RES-01', meanFor(ds, 'IND-RES-01', 'student').mean, 2.6);
-check('IND-CLR-01', meanFor(ds, 'IND-CLR-01', 'student').mean, 4.2);
-check('IND-ACT-02', meanFor(ds, 'IND-ACT-02', 'student').mean, 2.9);
-check('IND-CGD-01', meanFor(ds, 'IND-CGD-01', 'student').mean, 2.5);
+check('IND-RES-01 (forced)', meanFor(ds, 'IND-RES-01', 'student').mean, 2.52);
+check('IND-CLR-01 (forced)', meanFor(ds, 'IND-CLR-01', 'student').mean, 4.27);
+check('IND-ACT-02 (forced)', meanFor(ds, 'IND-ACT-02', 'student').mean, 2.9);
+check('IND-CGD-01 (forced)', meanFor(ds, 'IND-CGD-01', 'student').mean, 2.36);
 check('IND-FBQ-01', meanFor(ds, 'IND-FBQ-01', 'student').mean, 2.7);
 check('IND-FBT-01', meanFor(ds, 'IND-FBT-01', 'student').mean, 2.3);
-check('IND-SAT-01', meanFor(ds, 'IND-SAT-01', 'student').mean, 3.9);
+check('IND-SAT-01 (forced)', meanFor(ds, 'IND-SAT-01', 'student').mean, 4.03);
 check('CGD not sure share', meanFor(ds, 'IND-CGD-01', 'student').nNonScoring / 96, 0.11, 0.01);
 check('LMS experienced', selectionRateFor(ds, 'IND-TECH-STU', 'student', 'lms').rate, 0.34, 0.01);
 console.log('--- faculty n=' + ds.responses.faculty.length);
@@ -87,9 +93,24 @@ for (const f of findings) console.log('  faculty-1s', f.id, evaluateTrigger(f, d
 console.log('--- viewer impact (faculty, all 5s)');
 const dsF5 = buildDataset({ role: 'faculty', answers: { F10: { powerpoint: '5', whiteboard: '5', lms: '5', videos: '5', 'virtual-labs': '5', 'ai-tools': '5' }, F11: '5', F13: '5', F19: '5', F21: '5', F23: '5', F25: ['none'], F37: '5', F38: 'x' } });
 for (const f of findings) console.log('  faculty-5s', f.id, evaluateTrigger(f, dsF5).fires ? 'FIRES' : 'DOES NOT FIRE');
-console.log('--- institution contrarian');
-const dsI = buildDataset({ role: 'institution', answers: { I5: 'no', I6: ['none'], I9: ['library'], I11: ['none'], I24: ['none'], I25: 'never', I26: 'institutionally', I34: 'none', I41: 'x' } });
-for (const f of findings) console.log('  inst', f.id, evaluateTrigger(f, dsI).fires ? 'FIRES' : 'DOES NOT FIRE');
-for (const d of allDomainBands(dsI)) console.log('  inst', d.domainId, d.band);
+console.log('--- response validation (cohort)');
+for (const v of allCohortValidation(ds)) {
+  console.log(
+    ' ',
+    v.pair.id.padEnd(12),
+    `n=${String(v.n).padEnd(3)}`,
+    `corrob=${(100 * v.corroborationRate).toFixed(0)}%`.padEnd(12),
+    `marg=${v.marginal}`.padEnd(9),
+    `contra=${v.contradicted}`.padEnd(11),
+    `primary=${f1(v.meanPrimary)} implied=${f1(v.meanImplied)} gap=${f1(v.meanSignedGap)}`,
+    v.bias,
+  );
+}
+console.log('--- response validation (one viewer: generous student)');
+const vChecks = checkAnswers('student', { 'S-Q31': '4', 'S-V31': 'recall', 'S-Q33': '5', 'S-V33': 'knew-no-task', 'S-Q34': '2', 'S-V34': '2to3w' });
+for (const c of vChecks) console.log(' ', c.pair.id, c.primaryValue, 'vs', c.impliedValue, '->', c.status);
+console.log(' summary', JSON.stringify(summarise(vChecks)));
+console.log('--- transfer chain');
+for (const l of readChain(ds)) console.log(' ', l.link.id, l.link.name.padEnd(12), f1(l.value), l.link.unit ?? '', l.status);
 console.log('--- ranking');
 for (const r of rankRecommendations(ds)) console.log(r.id, r.findingId, r.basis, r.score);

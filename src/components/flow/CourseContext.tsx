@@ -15,7 +15,7 @@ export const CourseContext = ({ onContinue, onBack }: { onContinue: () => void; 
       <p className="section-label">Course context</p>
       <h1 className="screen-title">This course is under review.</h1>
       <p className="screen-lede">
-        Your responses will be read alongside the evidence already assembled for this course, and against the records the institution holds about it. Nothing you answer is attributed to you, and no single response determines a finding.
+        Your responses will be read alongside the evidence already assembled for this course, and against the records the institution holds about it. A few of the questions ask about the same thing twice, once as a judgement and once anchored to a specific occasion; that pairing is what lets the analysis check a response rather than simply accept it. Nothing you answer is attributed to you, and no single response determines a finding.
       </p>
       <div className="split" style={{ marginBottom: 'var(--s6)' }}>
         <div className="context-card">
@@ -60,7 +60,7 @@ export const CourseContext = ({ onContinue, onBack }: { onContinue: () => void; 
             <dd>{seedRespondentBase.student}</dd>
             <dt>Lecturer responses</dt>
             <dd>{seedRespondentBase.faculty}</dd>
-            <dt>Administrative responses</dt>
+            <dt>Administrative returns</dt>
             <dd>{seedRespondentBase.institution}</dd>
             <dt>Feedback records</dt>
             <dd>{derived('feedback.turnaround.n')}</dd>

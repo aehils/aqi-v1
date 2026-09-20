@@ -7,6 +7,9 @@ import { constructById } from '../../data/constructs';
 import { Dumbbell } from '../charts/Dumbbell';
 import { f1, share } from '../../lib/format';
 import { sourceLabel } from '../../data/indicators';
+import { allCohortValidation } from '../../engine/validate';
+import { validationRule, validationDisposition, BIAS_THRESHOLD } from '../../data/validation';
+import { questionById, groupLabels } from '../../instruments';
 
 const pointLabels = { student: 'Students', faculty: 'Lecturers', institution: 'Academic / admin' } as const;
 
@@ -166,6 +169,67 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
           <Row label="Quality indicators reviewed" value={cat('IND-REV-01').modal} />
         </div>
       </div>
+
+      <p className="section-label">Within-source validation</p>
+      <p className="section-note">
+        Before any source is set against another, each is set against itself. On the readings that matter most, every respondent answered twice: once as a
+        judgement, once anchored to a quantity, a specific occasion or what followed from it. {validationRule} A mean gap of {BIAS_THRESHOLD.toFixed(1)} or more
+        on the shared scale is reported as directional, not as noise.
+      </p>
+      <div className="table-scroll">
+        <table className="data">
+          <thead>
+            <tr>
+              <th>Reading checked</th>
+              <th>Source</th>
+              <th>n</th>
+              <th>Corroborated</th>
+              <th>Marginal</th>
+              <th>Contradicted</th>
+              <th>Judgement</th>
+              <th className="col-objective">Anchor</th>
+              <th>Mean gap</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allCohortValidation(ds).map((v) => (
+              <tr key={v.pair.id} className="values">
+                <td className="construct">
+                  <strong>{constructById(v.pair.constructId).name}</strong>
+                  <br />
+                  <span className="cell__caption">
+                    {questionById(v.pair.primaryQuestionId).id} checked by {questionById(v.pair.validatorQuestionId).id}
+                  </span>
+                </td>
+                <td>{groupLabels[v.pair.role]}</td>
+                <td className="num">{v.n}</td>
+                <td className="num">{Math.round(100 * v.corroborationRate)}%</td>
+                <td className="num">{v.marginal}</td>
+                <td className="num">{v.contradicted}</td>
+                <td className="num">{f1(v.meanPrimary)}</td>
+                <td className="num col-objective">{f1(v.meanImplied)}</td>
+                <td>
+                  {v.bias === 'none' ? (
+                    <span className="muted">
+                      {v.meanSignedGap > 0 ? '+' : ''}
+                      {f1(v.meanSignedGap)} · within noise
+                    </span>
+                  ) : (
+                    <>
+                      <span className="row-flag">
+                        {v.meanSignedGap > 0 ? '+' : ''}
+                        {f1(v.meanSignedGap)}
+                      </span>
+                      <span className="cell__caption">{v.bias === 'over-reports' ? v.pair.ifPrimaryHigher : v.pair.ifPrimaryLower}</span>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="section-note">{validationDisposition}</p>
 
       <p className="section-label">Discrepancy matrix</p>
       <p className="section-note">
