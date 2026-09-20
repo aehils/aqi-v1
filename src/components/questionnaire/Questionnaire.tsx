@@ -103,40 +103,54 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
   }, [q]);
 
   return (
-    <div className="column screen">
-      <div className="q-wrap">
-      <div className="q-head">
-        <span>
-          Question {state.questionIndex + 1} of {questions.length}
-        </span>
-        <label className="lens">
-          <input type="checkbox" checked={state.evidenceLens} onChange={() => dispatch({ type: 'TOGGLE_LENS' })} />
-          Evidence lens
-        </label>
-      </div>
-      <div className="q-progress" aria-hidden="true">
-        <span style={{ width: `${(100 * state.questionIndex) / questions.length}%` }} />
-      </div>
-
-      {state.evidenceLens && (
-        <div className="lens-strip" aria-live="polite">
-          <div className="chip-strip">
-            {lens?.domain && <span className="chip">Domain {lens.domain.number} · {lens.domain.name}</span>}
-            {lens?.construct && <span className="chip">{lens.construct.name}</span>}
-            {lens && <span className="chip">Indicator {lens.ind.id}</span>}
-            {lens && <span className="chip">{evidenceTypeLabel[lens.ind.evidenceType]}</span>}
-            {lens && <span className="chip">{evidenceClassLabel[lens.ind.evidenceClass]}</span>}
-            {!lens && q.constructId && <span className="chip">{constructById(q.constructId).name}</span>}
-            {!lens && <span className="chip">Qualitative evidence · not scored</span>}
-          </div>
-          {q.whyThisRespondent && <p className="small muted">Why this respondent: {q.whyThisRespondent}</p>}
+    <div className="column screen screen--q">
+      <div className="q-meta">
+        <div className="q-head">
+          <p className="section-label q-section">{q.section}</p>
+          <label className="lens">
+            <input
+              type="checkbox"
+              role="switch"
+              checked={state.evidenceLens}
+              onChange={() => dispatch({ type: 'TOGGLE_LENS' })}
+            />
+            <span className="switch" aria-hidden="true" />
+            Evidence lens
+          </label>
+          <span className="q-count">
+            {/* A hidden twin at the widest the label ever gets holds the
+                width, so nothing shifts when the index reaches 10. */}
+            <span className="q-count__sizer" aria-hidden="true">
+              Question {questions.length} of {questions.length}
+            </span>
+            <span className="q-count__value">
+              Question {state.questionIndex + 1} of {questions.length}
+            </span>
+          </span>
         </div>
-      )}
+        <div className="q-progress" aria-hidden="true">
+          <span style={{ width: `${(100 * state.questionIndex) / questions.length}%` }} />
+        </div>
+        {state.evidenceLens && (
+          <div className="lens-panel" aria-live="polite">
+            <div className="chip-strip">
+              {lens?.domain && <span className="chip">Domain {lens.domain.number} · {lens.domain.name}</span>}
+              {lens?.construct && <span className="chip">{lens.construct.name}</span>}
+              {lens && <span className="chip">Indicator {lens.ind.id}</span>}
+              {lens && <span className="chip">{evidenceTypeLabel[lens.ind.evidenceType]}</span>}
+              {lens && <span className="chip">{evidenceClassLabel[lens.ind.evidenceClass]}</span>}
+              {!lens && q.constructId && <span className="chip">{constructById(q.constructId).name}</span>}
+              {!lens && <span className="chip">Qualitative evidence · not scored</span>}
+            </div>
+            {q.whyThisRespondent && <p className="small muted">Why this respondent: {q.whyThisRespondent}</p>}
+          </div>
+        )}
+      </div>
 
+      <div className="q-wrap">
       <h1 className="q-text" ref={headingRef} tabIndex={-1}>
         {q.text}
       </h1>
-      <p className="section-label screen__eyebrow q-section">{q.section}</p>
       {q.note && <p className="q-note">{q.note}</p>}
 
       {q.type === 'single' && (

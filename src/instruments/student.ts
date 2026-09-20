@@ -101,7 +101,6 @@ export const studentQuestions: Question[] = [
     number: 32,
     section: 'Section E — Assessment & Feedback',
     text: 'Think of the most recent test or exam in this course. What did most of the questions actually require you to do?',
-    note: 'Asked to check the previous answer against a specific occasion rather than a general impression.',
     type: 'single',
     options: anchored([
       ['recall', 'Reproduce facts, definitions or labelled diagrams', 1],
@@ -132,7 +131,6 @@ export const studentQuestions: Question[] = [
     number: 33,
     section: 'Section E — Assessment & Feedback',
     text: 'The last time you received feedback on your work, what were you actually able to do with it?',
-    note: 'Asked to check the previous answer against what followed from it.',
     type: 'single',
     options: anchored([
       ['nothing', 'I could not tell what to do differently', 1],
