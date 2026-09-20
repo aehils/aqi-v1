@@ -5,6 +5,7 @@ export const Entry = ({ onBegin }: { onBegin: () => void }) => (
     <div className="entry__hero">
       <div>
         <h1>Academic Quality Intelligence Platform</h1>
+        <p className="section-label entry__eyebrow">Interactive demonstration</p>
       </div>
       <div>
         <p className="entry__lede">
@@ -25,7 +26,7 @@ export const Entry = ({ onBegin }: { onBegin: () => void }) => (
         <label htmlFor="entry-session">Academic session</label>
         <input id="entry-session" value={course.session} readOnly disabled />
       </div>
-      <p className="field__note">Fixed for this demonstration.</p>
+      <p className="field__note">DEMO</p>
     </div>
 
     <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>

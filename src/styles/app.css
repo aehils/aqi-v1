@@ -136,7 +136,7 @@ td.num,
   max-width: var(--column);
   margin: 0 auto;
   width: 100%;
-  padding: var(--s3) var(--margin) 0;
+  padding: var(--s2) var(--margin) 0;
   display: flex;
   justify-content: flex-end;
 }
@@ -478,6 +478,14 @@ table.data th:last-child {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.entry {
+  padding-top: var(--s3);
+}
+
+.entry__eyebrow {
+  margin-top: var(--s2);
 }
 
 .entry__hero {
