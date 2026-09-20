@@ -632,10 +632,10 @@ table.data th:last-child {
 
 .role-card__icon {
   /* One asset, recoloured through a mask: grey at rest, green on hover. */
-  /* Sits at the top; the name stays anchored to the bottom. */
-  margin-bottom: auto;
-  width: 44px;
-  height: 44px;
+  /* Auto margins centre it in the space above the name. */
+  margin: auto;
+  width: 88px;
+  height: 88px;
   background-color: var(--evidence);
   transition: background-color var(--t);
 }
