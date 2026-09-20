@@ -1,38 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ViewerSubmission } from '../../engine/session';
 import { seedDataset } from '../../engine/dataset';
-import { instruments, roleLabels } from '../../instruments';
-import { allComparisons } from '../../engine/compare';
-import { buildDataset } from '../../engine/session';
 import { constructs } from '../../data/constructs';
 import { derived } from '../../engine/derived';
-import { checkAnswers, summarise } from '../../engine/validate';
 
-/** Four staged steps, each reporting what the code actually computed. */
+/** Staged steps, each naming what the code is actually doing. */
 export const Assembly = ({ submission, onDone }: { submission: ViewerSubmission; onDone: () => void }) => {
   const [step, setStep] = useState(0);
 
   const steps = useMemo(() => {
-    const questions = instruments[submission.role];
-    const encoded = questions.filter((q) => q.indicatorId && submission.answers[q.id] !== undefined).length;
-    const constructIds = new Set(questions.map((q) => q.constructId).filter(Boolean));
     const n = seedDataset.responses;
-    const ds = buildDataset(submission);
-    const flagged = allComparisons(ds).filter((c) => c.flagged).length;
     const instrumented = constructs.filter((c) => c.instrumented).length;
-    const consistency = summarise(checkAnswers(submission.role, submission.answers));
     return [
-      { text: 'Encoding your responses as indicator values', result: `${encoded} indicator values` },
-      {
-        text: 'Checking your answers on the crucial readings against the anchored items that validate them',
-        result: `${consistency.corroborated} of ${consistency.scored} corroborated`,
-      },
-      { text: 'Mapping indicators to AQIP constructs', result: `${constructIds.size} constructs` },
-      {
-        text: `Combining with ${n.student.length} student, ${n.faculty.length} lecturer and ${n.institution.length} administrative returns, institutional records, LMS activity and ${derived('artefact.count')} assessment artefacts`,
-        result: `${n.student.length + n.faculty.length + n.institution.length + 1} responses`,
-      },
-      { text: `Running cross-source comparison across ${instrumented} instrumented constructs`, result: `${flagged} constructs flagged` },
+      'Encoding your responses as indicator values',
+      'Checking your answers on the crucial readings against the anchored items that validate them',
+      'Mapping indicators to AQIP constructs',
+      `Combining with ${n.student.length} student, ${n.faculty.length} lecturer and ${n.institution.length} administrative returns, institutional records, LMS activity and ${derived('artefact.count')} assessment artefacts`,
+      `Running cross-source comparison across ${instrumented} instrumented constructs`,
     ];
   }, [submission]);
 
@@ -42,19 +26,17 @@ export const Assembly = ({ submission, onDone }: { submission: ViewerSubmission;
   }, []);
 
   const done = step >= 5;
-  const role = roleLabels[submission.role].toLowerCase();
 
   return (
     <div className="column assembly" aria-live="polite">
       <p className="section-label">Evidence assembly</p>
       <ol>
-        {steps.map((s, i) => (
-          <li key={s.text} className={step >= i ? 'is-visible' : undefined}>
+        {steps.map((text, i) => (
+          <li key={text} className={step >= i ? 'is-visible' : undefined}>
             <span className="assembly__mark" aria-hidden="true">
               {step > i ? '✓' : `${i + 1}.`}
             </span>
-            <span>{s.text}</span>
-            {step > i && <span className="assembly__result">{s.result}</span>}
+            <span>{text}</span>
           </li>
         ))}
       </ol>
@@ -63,12 +45,12 @@ export const Assembly = ({ submission, onDone }: { submission: ViewerSubmission;
       </p>
       {done && (
         <div>
+          <p className="assembly__collated">
+            Your results have collated, and a report has been generated on the quality of your course.
+          </p>
           <button type="button" className="btn" onClick={onDone} autoFocus>
             Read your report
           </button>
-          <span className="muted small" style={{ marginLeft: 16 }}>
-            Your {role} response is now one record in the evidence base. Your report comes first; the course analysis follows it.
-          </span>
         </div>
       )}
     </div>

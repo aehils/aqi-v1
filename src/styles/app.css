@@ -905,12 +905,11 @@ textarea.q-open {
   font-variant-numeric: tabular-nums;
 }
 
-.assembly__result {
+.assembly__collated {
   color: var(--ink-muted);
-  font-size: 13px;
-  margin-left: auto;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+  max-width: 48ch;
+  margin-bottom: var(--s3);
 }
 
 .assembly__frame {
