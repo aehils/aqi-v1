@@ -861,9 +861,14 @@ table.data th:last-child {
 
 /* ---------- Questionnaire ---------- */
 
-/* The meta row spans the page frame rather than the reading column, so
-   the count and the lens toggle sit together at the right margin while
-   the question itself starts at the left one. */
+/* The meta block spans the page frame rather than the reading column, so
+   the lens switch and the count sit together at the top right while the
+   question itself starts at the left margin. It also anchors the lens
+   panel, which drops from its bottom right corner. */
+.q-meta {
+  position: relative;
+}
+
 .q-head {
   display: flex;
   align-items: center;
@@ -872,6 +877,11 @@ table.data th:last-child {
   margin-bottom: var(--s2);
   font-size: 13px;
   color: var(--ink-muted);
+}
+
+.q-count {
+  /* Last in the row, so it reads as the page's own position marker. */
+  order: 2;
 }
 
 .q-progress {
@@ -918,16 +928,64 @@ table.data th:last-child {
   user-select: none;
 }
 
+/* The checkbox stays in the DOM — it carries the switch role, the state
+   and the keyboard behaviour — and .switch is painted in its place. */
 .lens input {
-  accent-color: var(--accent);
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.lens-strip {
-  margin: 0 0 var(--s4);
-  padding: var(--s2);
-  border: 1px dashed var(--line-strong);
+.switch {
+  width: 30px;
+  height: 17px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  position: relative;
+  flex: none;
+  transition: background var(--t);
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--t);
+}
+
+.lens input:checked + .switch {
+  background: var(--accent);
+}
+
+.lens input:checked + .switch::after {
+  transform: translateX(13px);
+}
+
+.lens input:focus-visible + .switch {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Drops from the meta block's bottom right corner, below the progress
+   indicator, and floats over the question rather than displacing it. */
+.lens-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  width: min(440px, 100%);
+  margin-top: var(--s2);
+  padding: var(--s3);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   background: var(--surface);
+  box-shadow: var(--shadow-drawer);
   display: flex;
   flex-direction: column;
   gap: 8px;
