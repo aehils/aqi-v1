@@ -889,6 +889,20 @@ table.data th:last-child {
 .q-count {
   /* Last in the row, so it reads as the page's own position marker. */
   order: 2;
+  position: relative;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.q-count__sizer {
+  visibility: hidden;
+}
+
+/* Anchored to the right edge of the reserved box, which is where the
+   row ends anyway. */
+.q-count__value {
+  position: absolute;
+  inset: 0 0 auto auto;
 }
 
 .q-progress {

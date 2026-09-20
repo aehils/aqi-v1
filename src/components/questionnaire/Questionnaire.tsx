@@ -118,7 +118,14 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
             Evidence lens
           </label>
           <span className="q-count">
-            Question {state.questionIndex + 1} of {questions.length}
+            {/* A hidden twin at the widest the label ever gets holds the
+                width, so nothing shifts when the index reaches 10. */}
+            <span className="q-count__sizer" aria-hidden="true">
+              Question {questions.length} of {questions.length}
+            </span>
+            <span className="q-count__value">
+              Question {state.questionIndex + 1} of {questions.length}
+            </span>
           </span>
         </div>
         <div className="q-progress" aria-hidden="true">
