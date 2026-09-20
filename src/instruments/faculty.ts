@@ -45,7 +45,6 @@ export const facultyQuestions: Question[] = [
     number: 12,
     section: 'Section C — Teaching Practice & Learning Technology',
     text: 'In a typical two-hour session on this course, roughly how many minutes are students doing something other than listening or copying?',
-    note: 'Asked to check the previous answer against a quantity rather than a frequency.',
     type: 'single',
     options: anchored([
       ['none', 'None — the session is delivery throughout', 1],
@@ -98,7 +97,6 @@ export const facultyQuestions: Question[] = [
     number: 22,
     section: 'Section E — Assessment & Feedback',
     text: 'In your most recent assessment on this course, roughly what share of the marks could only be earned by applying knowledge to a situation not already worked through in class?',
-    note: 'Asked to check the previous answer against a specific paper.',
     type: 'single',
     options: anchored([
       ['lt10', 'Under 10% of the marks', 1],
@@ -129,7 +127,6 @@ export const facultyQuestions: Question[] = [
     number: 24,
     section: 'Section E — Assessment & Feedback',
     text: 'After your most recent feedback release on this course, how long was it until the next task students could apply that feedback to?',
-    note: 'Asked to check the previous answer against the assessment calendar.',
     type: 'single',
     options: anchored([
       ['none', 'There was no further task that semester', 1],

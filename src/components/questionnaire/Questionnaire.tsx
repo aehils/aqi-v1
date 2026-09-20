@@ -103,9 +103,10 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
   }, [q]);
 
   return (
-    <div className="column screen">
+    <div className="column screen screen--q">
       <div className="q-meta">
         <div className="q-head">
+          <p className="section-label q-section">{q.section}</p>
           <label className="lens">
             <input
               type="checkbox"
@@ -143,7 +144,6 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
       <h1 className="q-text" ref={headingRef} tabIndex={-1}>
         {q.text}
       </h1>
-      <p className="section-label screen__eyebrow q-section">{q.section}</p>
       {q.note && <p className="q-note">{q.note}</p>}
 
       {q.type === 'single' && (
