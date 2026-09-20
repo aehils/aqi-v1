@@ -23,29 +23,39 @@ export const RoleSelect = ({ onSelect }: { onSelect: (r: Role) => void }) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [onSelect]);
   return (
-    <div className="column">
-      <p className="section-label">Role selection</p>
-      <h1 className="screen-title">How are you participating in this review?</h1>
-      <div className="role-grid">
-        {roles.map((r) => (
-          <button
-            key={r.role}
-            type="button"
-            className="role-card"
-            onClick={() => onSelect(r.role)}
-            onMouseEnter={() => setHint(r.evidence)}
-            onMouseLeave={() => setHint(null)}
-            onFocus={() => setHint(r.evidence)}
-            onBlur={() => setHint(null)}
-          >
-            <span className="role-card__name">{r.label}</span>
-          </button>
-        ))}
+    <div className="column screen">
+      <div className="screen__hero">
+        <div>
+          <h1 className="screen-title">How are you participating in this review?</h1>
+          <p className="section-label screen__eyebrow">Role selection</p>
+        </div>
+        <div>
+          <p className="screen-lede">{defaultHint}</p>
+          <p className="screen-lede">{asideNote}</p>
+        </div>
       </div>
-      <p className="role-hint" aria-live="polite">
-        {hint ?? defaultHint}
-      </p>
-      <p className="role-aside">{asideNote}</p>
+
+      <div className="screen__tail">
+        <div className="role-grid">
+          {roles.map((r) => (
+            <button
+              key={r.role}
+              type="button"
+              className="role-card"
+              onClick={() => onSelect(r.role)}
+              onMouseEnter={() => setHint(r.evidence)}
+              onMouseLeave={() => setHint(null)}
+              onFocus={() => setHint(r.evidence)}
+              onBlur={() => setHint(null)}
+            >
+              <span className="role-card__name">{r.label}</span>
+            </button>
+          ))}
+        </div>
+        <p className="role-hint" aria-live="polite">
+          {hint ?? 'Hover or focus a track to see what it is positioned to evidence.'}
+        </p>
+      </div>
     </div>
   );
 };

@@ -467,28 +467,38 @@ table.data th:last-child {
 
 /* ---------- Entry ---------- */
 
-.entry {
+.entry,
+.screen {
   /* This screen never scrolls: .shell__main is the flex remainder of a
      100vh shell, and the entry column fills it. No measured offsets. */
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-top: var(--s8);
+  padding-top: var(--s10);
   padding-bottom: var(--s6);
 }
 
-.entry__eyebrow {
+/* The role screen sits under the header bar, so it needs less top air
+   than the landing page, which has none. */
+.screen {
+  padding-top: var(--s6);
+  padding-bottom: var(--s4);
+}
+
+.entry__eyebrow,
+.screen__eyebrow {
   margin-top: var(--s2);
 }
 
-.entry__hero {
+.entry__hero,
+.screen__hero {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: var(--s5) var(--s10);
   align-items: start;
   /* Minimum gap; .entry-form's auto margin takes whatever else is free. */
-  margin-bottom: var(--s6);
+  margin-bottom: var(--s4);
 }
 
 .entry h1 {
@@ -507,6 +517,13 @@ table.data th:last-child {
 
 .entry__lede + .entry__lede {
   margin-top: var(--s2);
+}
+
+/* Anchors a screen's action block to the bottom without ever
+   overflowing it: auto margins only absorb free space. */
+.screen__tail {
+  margin-top: auto;
+  margin-bottom: 0;
 }
 
 .entry-form {
@@ -551,7 +568,8 @@ table.data th:last-child {
 }
 
 @media (max-width: 940px) {
-  .entry__hero {
+  .entry__hero,
+  .screen__hero {
     grid-template-columns: 1fr;
   }
   .entry h1 {
@@ -569,14 +587,26 @@ table.data th:last-child {
 
 .screen-lede {
   color: var(--ink-muted);
-  max-width: 84ch;
-  margin-bottom: var(--s6);
   font-size: 16px;
+}
+
+.screen__hero .screen-lede + .screen-lede {
+  margin-top: var(--s2);
+}
+
+.screen .screen-title {
+  font-size: 40px;
+  margin-bottom: 0;
+  max-width: 20ch;
+}
+
+.screen__tail .role-hint {
+  margin-bottom: 0;
 }
 
 .role-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 300px));
+  grid-template-columns: repeat(2, minmax(0, 220px));
   gap: var(--s2);
   margin-bottom: var(--s3);
 }
