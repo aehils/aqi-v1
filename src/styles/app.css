@@ -483,7 +483,9 @@ table.data th:last-child {
    than the landing page, which has none. */
 .screen {
   padding-top: var(--s6);
-  padding-bottom: var(--s3);
+  /* Same bottom inset as the landing page, so every screen's buttons
+     sit on one line across the flow. */
+  padding-bottom: var(--s6);
 }
 
 /* Content-dense screens keep a tighter hero than the landing page. */
@@ -827,6 +829,33 @@ table.data th:last-child {
   margin-bottom: var(--s2);
 }
 
+/* A plain record, not a card: hairline rows that sit on the canvas the
+   way the landing page's fields do. */
+.record {
+  margin: 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.record__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.record dt {
+  color: var(--ink-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.record dd {
+  margin: 0;
+  text-align: right;
+}
+
 /* ---------- Questionnaire ---------- */
 
 .q-head {
@@ -899,7 +928,9 @@ table.data th:last-child {
   display: flex;
   align-items: center;
   gap: var(--s2);
-  margin-top: var(--s4);
+  /* Spacing comes from .screen__tail's auto margin, which this rule
+     would otherwise override by appearing later in the sheet. */
+  margin-top: auto;
 }
 
 .q-hint {

@@ -16,25 +16,32 @@ export const CourseContext = ({ onContinue, onBack }: { onContinue: () => void; 
           <h1 className="screen-title">This course is under review.</h1>
           <p className="section-label screen__eyebrow">Course context</p>
         </div>
-        <div className="context-card">
-          <h2 className="context-card__title">
-            {course.code} — {course.title}
-          </h2>
-          <dl>
+        <dl className="record">
+          <div className="record__row">
             <dt>Faculty</dt>
             <dd>{course.faculty}</dd>
+          </div>
+          <div className="record__row">
             <dt>Department</dt>
             <dd>{course.department}</dd>
+          </div>
+          <div className="record__row">
             <dt>Programme</dt>
             <dd>{course.programme}</dd>
+          </div>
+          <div className="record__row">
             <dt>Level</dt>
-            <dd>{course.level}</dd>
+            <dd className="num">{course.level}</dd>
+          </div>
+          <div className="record__row">
             <dt>Session</dt>
-            <dd>{course.session}</dd>
+            <dd className="num">{course.session}</dd>
+          </div>
+          <div className="record__row">
             <dt>Enrolment</dt>
-            <dd className="num">{course.enrolment}</dd>
-          </dl>
-        </div>
+            <dd className="num">{course.enrolment} students</dd>
+          </div>
+        </dl>
       </div>
 
       <div className="screen__tail" style={{ display: 'flex', gap: 16 }}>
