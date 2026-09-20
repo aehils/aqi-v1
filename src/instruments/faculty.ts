@@ -3,6 +3,12 @@ import type { Question, Option } from '../data/types';
 const scale = (labels: string[]): Option[] => labels.map((label, i) => ({ key: String(i + 1), label, value: i + 1, scoring: true }));
 const multi = (labels: [string, string][]): Option[] => labels.map(([key, label]) => ({ key, label }));
 
+/** Validator options: each answer carries the value it implies on the paired item's 1-5 scale. */
+const anchored = (rows: [string, string, number | null][]): Option[] =>
+  rows.map(([key, label, implies]) =>
+    implies === null ? { key, label, scoring: false } : { key, label, implies, scoring: true },
+  );
+
 export const facultyQuestions: Question[] = [
   {
     id: 'F10',
@@ -33,6 +39,26 @@ export const facultyQuestions: Question[] = [
     indicatorId: 'IND-ACT-01',
     constructId: 'active-learning-engagement',
     whyThisRespondent: 'This asks what teaching provides, not how effective it is. It is compared with what students report experiencing.',
+  },
+  {
+    id: 'F-V11',
+    number: 12,
+    section: 'Section C — Teaching Practice & Learning Technology',
+    text: 'In a typical two-hour session on this course, roughly how many minutes are students doing something other than listening or copying?',
+    note: 'Asked to check the previous answer against a quantity rather than a frequency.',
+    type: 'single',
+    options: anchored([
+      ['none', 'None — the session is delivery throughout', 1],
+      ['lt10', 'Under 10 minutes', 2],
+      ['10to25', '10 to 25 minutes', 3],
+      ['25to45', '25 to 45 minutes', 4],
+      ['gt45', 'More than 45 minutes', 5],
+      ['x1', 'It varies too much to estimate', null],
+    ]),
+    validates: 'F11',
+    validationKind: 'behavioural-anchor',
+    constructId: 'active-learning-engagement',
+    whyThisRespondent: 'Only the person teaching knows how the time is spent. A quantity of minutes is a harder reading than a frequency word, and it can be set against enrolment relative to room capacity.',
   },
   {
     id: 'F13',
@@ -68,6 +94,26 @@ export const facultyQuestions: Question[] = [
     whyThisRespondent: 'Faculty report of assessment demand, compared with student experience and artefact analysis of the papers.',
   },
   {
+    id: 'F-V21',
+    number: 22,
+    section: 'Section E — Assessment & Feedback',
+    text: 'In your most recent assessment on this course, roughly what share of the marks could only be earned by applying knowledge to a situation not already worked through in class?',
+    note: 'Asked to check the previous answer against a specific paper.',
+    type: 'single',
+    options: anchored([
+      ['lt10', 'Under 10% of the marks', 1],
+      ['10to25', '10–25% of the marks', 2],
+      ['25to50', '25–50% of the marks', 3],
+      ['50to75', '50–75% of the marks', 4],
+      ['gt75', 'Over 75% of the marks', 5],
+      ['x1', 'I would have to look at the paper', null],
+    ]),
+    validates: 'F21',
+    validationKind: 'recall-anchor',
+    constructId: 'cognitive-demand',
+    whyThisRespondent: 'This is the one validator with an independent objective counterpart: the same share is computed directly from the marks in the assessment artefacts, so lecturer report, student report and the paper itself can all be read against one another.',
+  },
+  {
     id: 'F23',
     number: 23,
     section: 'Section E — Assessment & Feedback',
@@ -77,6 +123,26 @@ export const facultyQuestions: Question[] = [
     indicatorId: 'IND-FBQ-02',
     constructId: 'feedback-quality',
     whyThisRespondent: 'Design intent of feedback is known to the person who writes it. Whether it could be used is known to the student and to the assessment schedule.',
+  },
+  {
+    id: 'F-V23',
+    number: 24,
+    section: 'Section E — Assessment & Feedback',
+    text: 'After your most recent feedback release on this course, how long was it until the next task students could apply that feedback to?',
+    note: 'Asked to check the previous answer against the assessment calendar.',
+    type: 'single',
+    options: anchored([
+      ['none', 'There was no further task that semester', 1],
+      ['gt28', 'More than four weeks', 2],
+      ['15to28', 'Two to four weeks', 3],
+      ['8to14', 'One to two weeks', 4],
+      ['lt7', 'Within a week', 5],
+      ['x1', 'I do not know', null],
+    ]),
+    validates: 'F23',
+    validationKind: 'consequence-anchor',
+    constructId: 'feedback-quality',
+    whyThisRespondent: 'Feedback designed to improve subsequent work presupposes subsequent work. This asks whether any existed, and is checked directly against the assessment schedule and the feedback-release timestamps.',
   },
   {
     id: 'F25',

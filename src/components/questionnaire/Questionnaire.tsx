@@ -45,11 +45,19 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
     headingRef.current?.focus();
   }, [q.id]);
 
-  const advance = useCallback(() => {
-    if (!answered) return;
+  const move = useCallback(() => {
     if (last) dispatch({ type: 'SUBMIT' });
     else dispatch({ type: 'NEXT_QUESTION', total: questions.length });
-  }, [answered, last, dispatch, questions.length]);
+  }, [last, dispatch, questions.length]);
+
+  const advance = useCallback(() => {
+    if (!answered) return;
+    move();
+  }, [answered, move]);
+
+  // Open responses are qualitative evidence and are never required. Skipping
+  // leaves no answer recorded, rather than recording an empty one.
+  const skippable = q.type === 'open';
 
   const setAnswer = useCallback((value: AnswerValue) => dispatch({ type: 'ANSWER', questionId: q.id, value }), [dispatch, q.id]);
 
@@ -243,6 +251,11 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
         <button type="button" className="btn" disabled={!answered} onClick={advance}>
           {last ? 'Submit responses' : 'Continue'}
         </button>
+        {skippable && (
+          <button type="button" className="btn--skip" onClick={move}>
+            Skip
+          </button>
+        )}
         <span className="q-hint">
           {q.type === 'single' && 'Number keys select · Enter continues'}
           {q.type === 'multi' && 'Number keys toggle · Enter continues'}

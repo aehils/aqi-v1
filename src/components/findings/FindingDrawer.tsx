@@ -7,7 +7,7 @@ import { constructById } from '../../data/constructs';
 import { domainById } from '../../data/domains';
 import { indicatorById, evidenceClassLabel, sourceLabel } from '../../data/indicators';
 import { verbatims } from '../../data/verbatims';
-import { instruments, roleLabels, questionById } from '../../instruments';
+import { instruments, roleLabels, groupLabels, questionById } from '../../instruments';
 import { meanFor, selectionsFor, matrixRowsFor, categoricalFor } from '../../engine/aggregate';
 import { derived, derivedMeta } from '../../engine/derived';
 import { categoricalMaps } from '../../data/readings';
@@ -181,7 +181,7 @@ export const FindingDrawer = ({ findingId, dataset, submission, onClose, onOpenC
               <blockquote className="quote" key={v.id}>
                 {v.text}
                 <footer>
-                  {roleLabels[v.group]} · {questionById(v.questionId).id} · simulated
+                  {groupLabels[v.group]} · {questionById(v.questionId).id} · simulated
                 </footer>
               </blockquote>
             ))}

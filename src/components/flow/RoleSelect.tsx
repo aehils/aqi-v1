@@ -4,10 +4,13 @@ import type { Role } from '../../data/types';
 const roles: { role: Role; label: string; evidence: string }[] = [
   { role: 'student', label: 'Student', evidence: 'Students are the source for perceived clarity, the learning experience, engagement, whether resources were reachable and feedback usable, and satisfaction.' },
   { role: 'faculty', label: 'Lecturer', evidence: 'Lecturers are the source for what is actually done in teaching and assessment: methods, technology used, feedback practice, and the constraints on it.' },
-  { role: 'institution', label: 'Academic / Administrative Staff', evidence: 'Administrators are the source for curriculum governance, declared provision and access barriers, moderation, monitoring and quality-assurance process.' },
 ];
 
-const defaultHint = 'Each role is positioned to provide evidence the others cannot. Your selection determines the instrument; it does not change the model.';
+const defaultHint =
+  'Two tracks run here. Each is positioned to provide evidence the other cannot, and the course is scored from both together. Your selection determines the instrument; it does not change the model.';
+
+const asideNote =
+  'Academic and administrative staff are not a track in this demonstration. Their returns on curriculum governance, declared provision, moderation and monitoring are already in the evidence base, and the analysis still reads student and lecturer evidence against them.';
 
 export const RoleSelect = ({ onSelect }: { onSelect: (r: Role) => void }) => {
   const [hint, setHint] = useState<string | null>(null);
@@ -42,6 +45,7 @@ export const RoleSelect = ({ onSelect }: { onSelect: (r: Role) => void }) => {
       <p className="role-hint" aria-live="polite">
         {hint ?? defaultHint}
       </p>
+      <p className="role-aside">{asideNote}</p>
     </div>
   );
 };

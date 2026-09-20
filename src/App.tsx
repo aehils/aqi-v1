@@ -7,6 +7,7 @@ import { RoleSelect } from './components/flow/RoleSelect';
 import { CourseContext } from './components/flow/CourseContext';
 import { Questionnaire } from './components/questionnaire/Questionnaire';
 import { Assembly } from './components/questionnaire/Assembly';
+import { ResponseReport } from './components/report/ResponseReport';
 import { Overview } from './components/intelligence/Overview';
 import { Perspectives } from './components/intelligence/Perspectives';
 import { FindingsList } from './components/findings/FindingsList';
@@ -52,6 +53,8 @@ export const App = () => {
         return <Questionnaire state={state} dispatch={dispatch} />;
       case 'assembly':
         return <Assembly submission={state.submission!} onDone={() => dispatch({ type: 'ASSEMBLY_DONE' })} />;
+      case 'report':
+        return <ResponseReport submission={state.submission!} dataset={dataset} onContinue={() => dispatch({ type: 'REPORT_DONE' })} />;
       case 'intelligence':
         switch (state.tab) {
           case 'overview':
