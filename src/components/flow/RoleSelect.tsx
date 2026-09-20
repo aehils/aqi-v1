@@ -6,11 +6,8 @@ const roles: { role: Role; label: string; evidence: string }[] = [
   { role: 'faculty', label: 'Lecturer', evidence: 'Lecturers are the source for what is actually done in teaching and assessment: methods, technology used, feedback practice, and the constraints on it.' },
 ];
 
-const defaultHint =
-  'Two tracks run here. Each is positioned to provide evidence the other cannot, and the course is scored from both together. Your selection determines the instrument; it does not change the model.';
-
-const asideNote =
-  'Academic and administrative staff are not a track in this demonstration. Their returns on curriculum governance, declared provision, moderation and monitoring are already in the evidence base, and the analysis still reads student and lecturer evidence against them.';
+const framing =
+  'Two tracks run here, student and lecturer, each positioned to provide evidence the other cannot. Both are read against the administrative returns on curriculum governance, declared provision, moderation and monitoring already held in the evidence base, and the course profile is computed from all of it. Your selection determines the instrument you answer; it does not change the model.';
 
 export const RoleSelect = ({ onSelect }: { onSelect: (r: Role) => void }) => {
   const [hint, setHint] = useState<string | null>(null);
@@ -30,8 +27,7 @@ export const RoleSelect = ({ onSelect }: { onSelect: (r: Role) => void }) => {
           <p className="section-label screen__eyebrow">Role selection</p>
         </div>
         <div>
-          <p className="screen-lede">{defaultHint}</p>
-          <p className="screen-lede">{asideNote}</p>
+          <p className="screen-lede">{framing}</p>
         </div>
       </div>
 
@@ -53,7 +49,11 @@ export const RoleSelect = ({ onSelect }: { onSelect: (r: Role) => void }) => {
           ))}
         </div>
         <p className="role-hint" aria-live="polite">
-          {hint ?? 'Hover or focus a track to see what it is positioned to evidence.'}
+          {hint && (
+            <span key={hint} className="role-hint__text">
+              {hint}
+            </span>
+          )}
         </p>
       </div>
     </div>
