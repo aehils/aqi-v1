@@ -484,8 +484,8 @@ table.data th:last-child {
 .screen {
   padding-top: var(--s6);
   /* Same bottom inset as the landing page, so every screen's buttons
-     sit on one line across the flow (the tail adds its own s2). */
-  padding-bottom: var(--s4);
+     sit on one line across the flow. */
+  padding-bottom: var(--s6);
 }
 
 /* Content-dense screens keep a tighter hero than the landing page. */
@@ -529,26 +529,8 @@ table.data th:last-child {
 /* Anchors a screen's action block to the bottom without ever
    overflowing it: auto margins only absorb free space. */
 .screen__tail {
-  /* Always in one place: anchored to the bottom of a screen that fits,
-     and pinned there while a longer one scrolls underneath. */
   margin-top: auto;
   margin-bottom: 0;
-  position: sticky;
-  bottom: var(--s4);
-  padding: var(--s2) 0;
-  background: var(--canvas);
-}
-
-/* Softens the edge where content scrolls under the pinned row. */
-.screen__tail::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  height: var(--s3);
-  background: linear-gradient(to top, var(--canvas), transparent);
-  pointer-events: none;
 }
 
 /* The questionnaire keeps its single reading column, but fills the
