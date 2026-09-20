@@ -203,6 +203,9 @@ td.num,
 .column {
   max-width: var(--column);
   margin: 0 auto;
+  /* .shell__main is a flex column, so an auto-margined item would
+     shrink to its content width instead of filling the page. */
+  width: 100%;
   padding: var(--s8) var(--margin) var(--s10);
 }
 
