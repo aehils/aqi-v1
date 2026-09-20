@@ -492,7 +492,7 @@ table.data th:last-child {
   font-size: 50px;
   font-weight: 500;
   max-width: 17ch;
-  margin: var(--s1) 0 0;
+  margin: 0;
 }
 
 .entry__lede {
@@ -503,25 +503,6 @@ table.data th:last-child {
 
 .entry__lede + .entry__lede {
   margin-top: var(--s2);
-}
-
-.entry__expect {
-  border-top: 1px solid var(--line-strong);
-  border-bottom: 1px solid var(--line-strong);
-  padding: var(--s3) 0;
-  margin-bottom: var(--s6);
-  max-width: var(--measure);
-}
-
-.entry__expect p {
-  font-size: 15px;
-  color: var(--ink);
-}
-
-.entry__expect-note {
-  margin-top: var(--s1) !important;
-  color: var(--ink-muted) !important;
-  font-size: 14px !important;
 }
 
 .entry-form {

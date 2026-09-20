@@ -57,7 +57,6 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
     <main className="shell__main">{children}</main>
     <footer className="shell__footer">
       <div className="shell__footer-inner">
-        <span>Simulated data. {course.institution} is a fictional institution.</span>
         <span>
           This demo instruments {instrumentedCount} of {constructCount} constructs in the AQIP model.
         </span>
