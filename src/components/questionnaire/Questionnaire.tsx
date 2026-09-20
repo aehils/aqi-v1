@@ -104,7 +104,6 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
 
   return (
     <div className="column screen">
-      <div className="q-wrap">
       <div className="q-head">
         <span>
           Question {state.questionIndex + 1} of {questions.length}
@@ -118,6 +117,7 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
         <span style={{ width: `${(100 * state.questionIndex) / questions.length}%` }} />
       </div>
 
+      <div className="q-wrap">
       {state.evidenceLens && (
         <div className="lens-strip" aria-live="polite">
           <div className="chip-strip">

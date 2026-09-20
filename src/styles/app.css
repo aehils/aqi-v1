@@ -861,11 +861,14 @@ table.data th:last-child {
 
 /* ---------- Questionnaire ---------- */
 
+/* The meta row spans the page frame rather than the reading column, so
+   the count and the lens toggle sit together at the right margin while
+   the question itself starts at the left one. */
 .q-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--s3);
+  justify-content: flex-end;
+  gap: var(--s5);
   margin-bottom: var(--s2);
   font-size: 13px;
   color: var(--ink-muted);
@@ -887,6 +890,9 @@ table.data th:last-child {
 
 .q-wrap {
   max-width: var(--measure);
+  /* Hugs the left margin of the frame; the head row above it keeps the
+     full width. */
+  margin-right: auto;
 }
 
 .q-text:focus {
