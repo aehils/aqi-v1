@@ -25,34 +25,59 @@ export const Assembly = ({ submission, onDone }: { submission: ViewerSubmission;
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, []);
 
-  const done = step >= 5;
+  const done = step >= steps.length;
 
   return (
-    <div className="column assembly" aria-live="polite">
-      <p className="section-label">Evidence assembly</p>
-      <ol>
-        {steps.map((text, i) => (
-          <li key={text} className={step >= i ? 'is-visible' : undefined}>
-            <span className="assembly__mark" aria-hidden="true">
-              {step > i ? '✓' : `${i + 1}.`}
+    <div className="column screen screen--q assembly" aria-live="polite">
+      {/* Same meta row as the questionnaire: label left, position right,
+          progress rule under it. The steps carry the position here. */}
+      <div className="q-meta">
+        <div className="q-head">
+          <p className="section-label q-section">Evidence assembly</p>
+          <span className="q-count">
+            <span className="q-count__sizer" aria-hidden="true">
+              Step {steps.length} of {steps.length}
             </span>
-            <span>{text}</span>
-          </li>
-        ))}
-      </ol>
-      <p className={`assembly__frame${done ? ' is-visible' : ''}`}>
-        Your responses have been validated against your own anchored answers, then combined with the student and lecturer responses already on file, the administrative returns for this course, institutional records and assessment artefacts. No single response determines a finding.
-      </p>
-      {done && (
-        <div>
-          <p className="assembly__collated">
-            Your responses have been collated, and your report is ready. The analysis of the course itself follows it.
+            <span className="q-count__value">
+              {done ? 'Complete' : `Step ${Math.min(step + 1, steps.length)} of ${steps.length}`}
+            </span>
+          </span>
+        </div>
+        <div className="q-progress" aria-hidden="true">
+          <span style={{ width: `${(100 * step) / steps.length}%` }} />
+        </div>
+      </div>
+
+      <div className="q-wrap">
+        <ol className="assembly__steps">
+          {steps.map((text, i) => (
+            <li key={text} className={step >= i ? 'is-visible' : undefined}>
+              <span className="assembly__mark" aria-hidden="true">
+                {step > i ? '✓' : `${i + 1}.`}
+              </span>
+              <span>{text}</span>
+            </li>
+          ))}
+        </ol>
+
+        <div className={`assembly__frame${done ? ' is-visible' : ''}`}>
+          <p className="assembly__claim">No single response determines a finding.</p>
+          <p className="assembly__basis">
+            Your answers were validated against your own anchored responses, then read beside the
+            student, lecturer and administrative returns already on file, together with institutional
+            records and assessment artefacts for this course.
           </p>
-          <button type="button" className="btn" onClick={onDone} autoFocus>
+        </div>
+
+        <div className="q-actions screen__tail">
+          <button type="button" className="btn" disabled={!done} onClick={onDone} autoFocus>
             Read your report
           </button>
+          <span className="q-hint">
+            {done ? 'Your report is ready. The analysis of the course itself follows it.' : 'Assembling evidence…'}
+          </span>
         </div>
-      )}
+      </div>
     </div>
   );
 };
