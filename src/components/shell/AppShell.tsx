@@ -12,16 +12,7 @@ const tabs: { id: Tab; label: string }[] = [
 
 export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View; tab: Tab; onTab: (t: Tab) => void; onRestart: () => void; children: ReactNode }) => (
   <div className="shell">
-    {view === 'entry' ? (
-      <div className="shell__entry-mark">
-        <span
-          className="simulated simulated--entry"
-          title="All institutional data, records, artefacts and responses in this demo are simulated."
-        >
-          Simulated data
-        </span>
-      </div>
-    ) : (
+    {view !== 'entry' && (
       <header className="shell__header">
         <div className="shell__header-inner">
           <div>
@@ -57,6 +48,14 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
     <main className="shell__main">{children}</main>
     <footer className="shell__footer">
       <div className="shell__footer-inner">
+        {view === 'entry' && (
+          <span
+            className="simulated simulated--entry"
+            title="All institutional data, records, artefacts and responses in this demo are simulated."
+          >
+            Simulated data
+          </span>
+        )}
         <span>
           This demo instruments {instrumentedCount} of {constructCount} constructs in the AQIP model.
         </span>
