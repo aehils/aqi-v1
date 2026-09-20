@@ -103,11 +103,11 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
   }, [q]);
 
   return (
-    <div className="column">
+    <div className="column screen">
       <div className="q-wrap">
       <div className="q-head">
         <span>
-          Question {state.questionIndex + 1} of {questions.length} · {q.section}
+          Question {state.questionIndex + 1} of {questions.length}
         </span>
         <label className="lens">
           <input type="checkbox" checked={state.evidenceLens} onChange={() => dispatch({ type: 'TOGGLE_LENS' })} />
@@ -136,8 +136,8 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
       <h1 className="q-text" ref={headingRef} tabIndex={-1}>
         {q.text}
       </h1>
+      <p className="section-label screen__eyebrow q-section">{q.section}</p>
       {q.note && <p className="q-note">{q.note}</p>}
-      {!q.note && <div style={{ height: 24 }} />}
 
       {q.type === 'single' && (
         <ul className="options" role="radiogroup" aria-label={q.text}>
@@ -244,7 +244,7 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
         />
       )}
 
-      <div className="q-actions">
+      <div className="q-actions screen__tail">
         <button type="button" className="btn btn--secondary" onClick={() => dispatch({ type: 'PREV_QUESTION' })}>
           Back
         </button>

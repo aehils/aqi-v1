@@ -11,13 +11,20 @@ export const CourseContext = ({ onContinue, onBack }: { onContinue: () => void; 
     return () => window.removeEventListener('keydown', onKey);
   }, [onContinue]);
   return (
-    <div className="column">
-      <p className="section-label">Course context</p>
-      <h1 className="screen-title">This course is under review.</h1>
-      <p className="screen-lede">
-        Your responses will be read alongside the evidence already assembled for this course, and against the records the institution holds about it. A few of the questions ask about the same thing twice, once as a judgement and once anchored to a specific occasion; that pairing is what lets the analysis check a response rather than simply accept it. Nothing you answer is attributed to you, and no single response determines a finding.
-      </p>
-      <div className="split" style={{ marginBottom: 'var(--s6)' }}>
+    <div className="column screen">
+      <div className="screen__hero">
+        <div>
+          <h1 className="screen-title">This course is under review.</h1>
+          <p className="section-label screen__eyebrow">Course context</p>
+        </div>
+        <div>
+          <p className="screen-lede">
+            Your responses will be read alongside the evidence already assembled for this course, and against the records the institution holds about it. A few of the questions ask about the same thing twice, once as a judgement and once anchored to a specific occasion; that pairing is what lets the analysis check a response rather than simply accept it. Nothing you answer is attributed to you, and no single response determines a finding.
+          </p>
+        </div>
+      </div>
+
+      <div className="split">
         <div className="context-card">
           <h2 className="context-card__title">
             {course.code} — {course.title}
@@ -72,7 +79,7 @@ export const CourseContext = ({ onContinue, onBack }: { onContinue: () => void; 
           <p>All of it simulated for this demonstration.</p>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 16 }}>
+      <div className="screen__tail" style={{ display: 'flex', gap: 16 }}>
         <button type="button" className="btn" onClick={onContinue} autoFocus>
           Continue
         </button>

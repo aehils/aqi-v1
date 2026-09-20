@@ -486,6 +486,11 @@ table.data th:last-child {
   padding-bottom: var(--s3);
 }
 
+/* Content-dense screens keep a tighter hero than the landing page. */
+.screen .screen__hero {
+  margin-bottom: var(--s6);
+}
+
 .entry__eyebrow,
 .screen__eyebrow {
   margin-top: var(--s2);
@@ -524,6 +529,25 @@ table.data th:last-child {
 .screen__tail {
   margin-top: auto;
   margin-bottom: 0;
+}
+
+/* The questionnaire keeps its single reading column, but fills the
+   screen the same way so its actions sit at the bottom edge. */
+.screen > .q-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--measure);
+  width: 100%;
+}
+
+.q-section {
+  margin-bottom: var(--s4);
+}
+
+.q-wrap .q-note {
+  margin-bottom: var(--s4);
 }
 
 .entry-form {
