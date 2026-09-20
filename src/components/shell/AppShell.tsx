@@ -12,13 +12,22 @@ const tabs: { id: Tab; label: string }[] = [
 
 export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View; tab: Tab; onTab: (t: Tab) => void; onRestart: () => void; children: ReactNode }) => (
   <div className="shell">
-    <header className="shell__header">
-      <div className="shell__header-inner">
-        <div>
-          <span className="wordmark">AQIP</span>
-          <span className="wordmark__sub">Academic Quality Intelligence Platform</span>
-        </div>
-        {view !== 'entry' && (
+    {view === 'entry' ? (
+      <div className="shell__entry-mark">
+        <span
+          className="simulated simulated--entry"
+          title="All institutional data, records, artefacts and responses in this demo are simulated."
+        >
+          Simulated data
+        </span>
+      </div>
+    ) : (
+      <header className="shell__header">
+        <div className="shell__header-inner">
+          <div>
+            <span className="wordmark">AQIP</span>
+            <span className="wordmark__sub">Academic Quality Intelligence Platform</span>
+          </div>
           <div className="shell__course">
             {course.code} — {course.title}
             <span className="header-detail">
@@ -28,12 +37,12 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
               {course.session}
             </span>
           </div>
-        )}
-        <span className="simulated" title="All institutional data, records, artefacts and responses in this demo are simulated.">
-          Simulated data
-        </span>
-      </div>
-    </header>
+          <span className="simulated" title="All institutional data, records, artefacts and responses in this demo are simulated.">
+            Simulated data
+          </span>
+        </div>
+      </header>
+    )}
     {view === 'intelligence' && (
       <nav className="nav" aria-label="Intelligence views">
         <div className="nav__inner">

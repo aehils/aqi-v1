@@ -132,6 +132,15 @@ td.num,
   }
 }
 
+.shell__entry-mark {
+  max-width: var(--column);
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--s3) var(--margin) 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .shell__header-inner .simulated {
   margin-left: auto;
 }
@@ -154,6 +163,16 @@ td.num,
   height: 6px;
   border-radius: 50%;
   background: var(--evidence);
+}
+
+.simulated--entry {
+  background: transparent;
+  color: var(--positive);
+  border-color: var(--positive);
+}
+
+.simulated--entry::before {
+  background: var(--positive);
 }
 
 .nav {
@@ -486,29 +505,23 @@ table.data th:last-child {
   margin-top: var(--s2);
 }
 
-.chain {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+.entry__expect {
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  padding: var(--s3) 0;
   margin-bottom: var(--s6);
-  font-size: 13px;
+  max-width: var(--measure);
 }
 
-.chain__step {
+.entry__expect p {
+  font-size: 15px;
   color: var(--ink);
 }
 
-.chain__sep {
-  color: var(--evidence);
-}
-
-.chain__note {
-  margin-left: auto;
-  color: var(--ink-muted);
+.entry__expect-note {
+  margin-top: var(--s1) !important;
+  color: var(--ink-muted) !important;
+  font-size: 14px !important;
 }
 
 .entry-form {

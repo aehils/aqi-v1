@@ -1,7 +1,4 @@
 import { course } from '../../data/course';
-import { overarchingQuestion, inquiryFraming } from '../../data/inquiry';
-
-const chain = ['Evidence', 'Validation', 'Analysis', 'Findings', 'Recommendations'];
 
 export const Entry = ({ onBegin }: { onBegin: () => void }) => (
   <div className="column entry">
@@ -12,36 +9,18 @@ export const Entry = ({ onBegin }: { onBegin: () => void }) => (
       </div>
       <div>
         <p className="entry__lede">
-          AQIP assembles evidence from students, lecturers, administrative returns, institutional records and assessment artefacts, and reads it against one quality model.
-        </p>
-        <p className="entry__lede">
-          The questionnaire is one evidence source. The intelligence is in what the system does with all of them: it checks each respondent's answers against their own anchored answers, compares what each source says, adjudicates against the record, and traces every figure back to where it came from.
+          AQIP assembles evidence from students, lecturers, administrative returns, institutional records and assessment artefacts, reads it against one quality model, and traces every figure back to where it came from.
         </p>
       </div>
     </div>
 
-    <div className="inquiry-banner inquiry-banner--entry">
-      <p className="section-label" style={{ marginBottom: 0 }}>
-        The question this evaluation exists to answer
+    <div className="entry__expect">
+      <p>
+        You will receive your own report as soon as you finish answering, then the course profile — an analysis synthesised from a comprehensive review of this course's evidence base, your responses included.
       </p>
-      <p className="inquiry-banner__q">{overarchingQuestion}</p>
-      <p className="inquiry-banner__note">{inquiryFraming}</p>
-    </div>
-
-    <div className="chain">
-      {chain.map((step, i) => (
-        <span key={step}>
-          <span className="chain__step">{step}</span>
-          {i < chain.length - 1 && (
-            <span className="chain__sep" aria-hidden="true">
-              {' → '}
-            </span>
-          )}
-        </span>
-      ))}
-      <span className="chain__note">
-        You answer as a student or a lecturer, receive your own report immediately, and then see the course profile synthesised from both sides. Quality is reported across seven domains, never as a single score.
-      </span>
+      <p className="entry__expect-note">
+        Quality is computed, not asserted: each domain's standing is derived from the evidence beneath it and can be opened to see how it was reached.
+      </p>
     </div>
 
     <div className="entry-form">
