@@ -606,13 +606,14 @@ table.data th:last-child {
 
 .role-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 200px));
+  grid-template-columns: repeat(2, minmax(0, 260px));
   gap: var(--s2);
   margin-bottom: var(--s3);
 }
 
 .role-card {
-  aspect-ratio: 1 / 1;
+  /* Height tracks the viewport so the screen still never scrolls. */
+  height: clamp(180px, 26vh, 260px);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -634,8 +635,8 @@ table.data th:last-child {
   /* One asset, recoloured through a mask: grey at rest, green on hover. */
   /* Auto margins centre it in the space above the name. */
   margin: auto;
-  width: 88px;
-  height: 88px;
+  width: 72px;
+  height: 72px;
   background-color: var(--evidence);
   transition: background-color var(--t);
 }
@@ -696,7 +697,8 @@ table.data th:last-child {
     grid-template-columns: 1fr;
   }
   .role-card {
-    aspect-ratio: auto;
+    height: auto;
+    min-height: 140px;
   }
 }
 
