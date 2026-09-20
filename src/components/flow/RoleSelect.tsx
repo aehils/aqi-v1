@@ -44,6 +44,7 @@ export const RoleSelect = ({ onSelect }: { onSelect: (r: Role) => void }) => {
               onFocus={() => setHint(r.evidence)}
               onBlur={() => setHint(null)}
             >
+              {r.role === 'student' && <span className="role-card__icon" aria-hidden="true" />}
               <span className="role-card__name">{r.label}</span>
             </button>
           ))}

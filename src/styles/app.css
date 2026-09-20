@@ -630,6 +630,23 @@ table.data th:last-child {
   border-color: var(--accent);
 }
 
+.role-card__icon {
+  /* One asset, recoloured through a mask: grey at rest, green on hover. */
+  /* Sits at the top; the name stays anchored to the bottom. */
+  margin-bottom: auto;
+  width: 44px;
+  height: 44px;
+  background-color: var(--evidence);
+  -webkit-mask: url('../assets/graduate.png') no-repeat center / contain;
+  mask: url('../assets/graduate.png') no-repeat center / contain;
+  transition: background-color var(--t);
+}
+
+.role-card:hover .role-card__icon,
+.role-card:focus-visible .role-card__icon {
+  background-color: var(--positive);
+}
+
 .role-card__name {
   font-family: var(--serif);
   font-size: 25px;
