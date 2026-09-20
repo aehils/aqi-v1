@@ -474,9 +474,8 @@ table.data th:last-child {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding-top: var(--s4);
-  padding-bottom: var(--s4);
+  padding-top: var(--s8);
+  padding-bottom: var(--s6);
 }
 
 .entry__eyebrow {
@@ -488,7 +487,8 @@ table.data th:last-child {
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: var(--s5) var(--s10);
   align-items: start;
-  margin-bottom: calc(var(--s10) * 1.5);
+  /* Minimum gap; .entry-form's auto margin takes whatever else is free. */
+  margin-bottom: var(--s6);
 }
 
 .entry h1 {
@@ -510,6 +510,9 @@ table.data th:last-child {
 }
 
 .entry-form {
+  /* Anchors the form and button to the bottom of the screen without
+     ever overflowing it: auto margins only absorb free space. */
+  margin-top: auto;
   display: flex;
   flex-wrap: wrap;
   gap: var(--s3);
