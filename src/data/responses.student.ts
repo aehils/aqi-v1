@@ -24,7 +24,7 @@ export const studentMarginals: Record<string, Record<string, number>> = {
   // Never … Very often, Not sure (x1) (forced choice)
   'S-Q31': { '1': 14, '2': 30, '3': 27, '4': 11, '5': 3, x1: 11 },
   // Not at all useful … Extremely useful, I have not received feedback (x1)
-  'S-Q33': { '1': 13, '2': 26, '3': 27, '4': 16, '5': 5, x1: 9 },
+  'S-Q33': { '1': 13, '2': 26, '3': 35, '5': 13, x1: 9 },
   // Much too late … Very timely, I have not received feedback (x1)
   'S-Q34': { '1': 24, '2': 30, '3': 20, '4': 10, '5': 3, x1: 9 },
   // Very dissatisfied … Very satisfied

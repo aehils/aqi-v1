@@ -121,7 +121,8 @@ export const studentQuestions: Question[] = [
     section: 'Section E — Assessment & Feedback',
     text: 'How useful is the feedback you receive on your work for improving your future performance?',
     type: 'single',
-    options: scale(['Not at all useful', 'Slightly useful', 'Moderately useful', 'Very useful', 'Extremely useful'], ['I have not received feedback']),
+    // "Very useful" is dropped; the rest keep their 1–5 positions, so there is no 4.
+    options: scale(['Not at all useful', 'Slightly useful', 'Moderately useful', 'Very useful', 'Extremely useful'], ['I have not received feedback']).filter((o) => o.key !== '4'),
     indicatorId: 'IND-FBQ-01',
     constructId: 'feedback-quality',
     whyThisRespondent: 'Whether feedback could be used to improve subsequent work is known only to the student who received it.',
