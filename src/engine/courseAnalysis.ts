@@ -12,13 +12,19 @@ export const buildCourseAnalysis = (dataset: Dataset) => {
     .filter(rank => supportedIds.has(rank.findingId))
     .map(rank => ({ ...rank, recommendation: recommendationById(rank.id), finding: findingById(rank.findingId) }));
   const priorityIds = [...new Set(actions.map(a => a.findingId))];
+  const concerns = supported.filter(f => f.kind === 'problem').sort((a, b) => {
+    const ai = priorityIds.indexOf(a.id);
+    const bi = priorityIds.indexOf(b.id);
+    return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi);
+  });
   return {
     supported,
     inactive: findings.filter(f => !supportedIds.has(f.id)),
-    concerns: supported.filter(f => f.kind === 'problem').sort((a, b) => {
-      const ai = priorityIds.indexOf(a.id);
-      const bi = priorityIds.indexOf(b.id);
-      return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi);
+    concerns,
+    /** Each supported concern once, joined to its highest-ranked action and any further ones. */
+    priorities: concerns.map(finding => {
+      const linked = actions.filter(a => a.findingId === finding.id);
+      return { finding, lead: linked[0] ?? null, further: linked.slice(1) };
     }),
     strengths: supported.filter(f => f.kind === 'strength'),
     questions: supported.filter(f => f.kind === 'relationship'),

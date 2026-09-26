@@ -20,7 +20,7 @@ export const Entry = ({ onBegin }: { onBegin: () => void }) => (
     <div className="entry-form">
       <div className="field">
         <label htmlFor="entry-course">Course under review</label>
-        <input id="entry-course" value={`${course.code} — ${course.title}`} readOnly disabled />
+        <input id="entry-course" value={`${course.code}: ${course.title}`} readOnly disabled />
       </div>
       <div className="field">
         <label htmlFor="entry-session">Academic session</label>
