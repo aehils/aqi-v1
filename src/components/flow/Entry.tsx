@@ -1,10 +1,17 @@
 import { course } from '../../data/course';
+import logo from '../../assets/logo.png';
 
 export const Entry = ({ onBegin }: { onBegin: () => void }) => (
   <div className="column entry">
     <div className="entry__hero">
       <div>
-        <h1>Academic Quality Intelligence Platform</h1>
+        <h1>
+          Academic Quality Intelligence{' '}
+          <span className="entry__title-end">
+            Platform
+            <img className="entry__logo" src={logo} alt="" />
+          </span>
+        </h1>
         <p className="section-label entry__eyebrow">Interactive demonstration</p>
       </div>
       <div>
