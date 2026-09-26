@@ -96,10 +96,10 @@ td.num,
 }
 
 .wordmark {
-  font-family: var(--serif);
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: 0.02em;
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 }
 
 .wordmark__sub {
@@ -517,10 +517,23 @@ table.data th:last-child {
   margin-bottom: var(--s4);
 }
 
+.entry__title-end {
+  /* Keeps the logo on the same line as the last word. */
+  white-space: nowrap;
+}
+
+.entry__logo {
+  width: 1.5em;
+  height: 1.5em;
+  margin-left: 0.3em;
+  vertical-align: -0.3em;
+}
+
 .entry h1 {
   font-size: 50px;
   font-weight: 500;
-  max-width: 20ch;
+  /* Room for "Intelligence Platform" plus the logo on one line. */
+  max-width: 23ch;
   margin: 0;
 }
 

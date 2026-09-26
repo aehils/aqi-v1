@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Tab, View } from '../../state/reducer';
 import { course } from '../../data/course';
 import { instrumentedCount, constructCount } from '../../data/constructs';
+import logo from '../../assets/logo.png';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Course overview' },
@@ -17,7 +18,7 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
     {view !== 'entry' && (
       <header className="shell__header">
         <div className="shell__header-inner">
-          <span className="wordmark">AQIP</span>
+          <img className="wordmark" src={logo} alt="AQIP" />
           <div className="shell__course">
             {course.code}: {course.title}
             <span className="sep" aria-hidden="true">|</span>
