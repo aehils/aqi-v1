@@ -11,7 +11,7 @@ export const parseHash = (hash: string): { tab: Tab; findingId: string | null } 
 };
 
 export const writeHash = (tab: Tab, findingId: string | null, active: boolean) => {
-  const next = active ? `#${tab}${tab === 'findings' && findingId ? `/${findingId}` : ''}` : '';
+  const next = active ? (findingId ? `#findings/${findingId}` : `#${tab}`) : '';
   if (window.location.hash !== next) {
     if (next) window.history.replaceState(null, '', next);
     else window.history.replaceState(null, '', window.location.pathname + window.location.search);

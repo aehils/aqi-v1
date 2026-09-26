@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import type { Dataset } from '../../engine/dataset';
 import { allComparisons, comparisonThresholdStatement, type ResolvedCell } from '../../engine/compare';
 import { groupSizes, meanFor, selectionRateFor, matrixMeanFor, categoricalFor } from '../../engine/aggregate';
@@ -8,7 +8,7 @@ import { Dumbbell } from '../charts/Dumbbell';
 import { f1, share } from '../../lib/format';
 import { sourceLabel } from '../../data/indicators';
 import { allCohortValidation } from '../../engine/validate';
-import { validationRule, validationDisposition, BIAS_THRESHOLD } from '../../data/validation';
+import { validationRule, BIAS_THRESHOLD } from '../../data/validation';
 import { questionById, groupLabels } from '../../instruments';
 
 const pointLabels = { student: 'Students', faculty: 'Lecturers', institution: 'Academic / admin' } as const;
@@ -70,15 +70,34 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
   const mx = (row: string) => `${f1(matrixMeanFor(ds, 'IND-TECH-FAC', 'faculty', row).mean)} / 5`;
   const cat = (id: 'IND-ILO-01' | 'IND-TRN-01' | 'IND-MON-01' | 'IND-REV-01') => categoricalFor(ds, id, 'institution', categoricalMaps[id]);
   const cmp = allComparisons(ds);
+  const [onlyDifferences, setOnlyDifferences] = useState(false);
+  const visible = onlyDifferences ? cmp.filter(c => c.flagged) : cmp;
 
   return (
-    <div className="column">
-      <p className="section-label">Perspectives</p>
-      <h1 className="screen-title">What each source reports, in its own terms.</h1>
-      <p className="screen-lede">
-        Three respondent groups report what they are positioned to know. The records, artefacts and system data report what happened. Read the panels first, then the matrix, which sets the two against each other construct by construct.
-      </p>
-
+    <div className="column analysis-page">
+      <header className="analysis-heading"><p className="section-label">Course analysis · Compare sources</p>
+        <h1>One course, different perspectives.</h1>
+        <p>Compare what students experience, what lecturers provide, and what the records show. Different accounts can reveal where to investigate; they do not tell us which person is wrong.</p>
+      </header>
+      <div className="analysis-comparison-toolbar"><p><strong>{cmp.filter(c => c.flagged).length} of {cmp.length} topics</strong> show different respondent signals under the model’s rules.</p>
+        <label><input type="checkbox" checked={onlyDifferences} onChange={e => setOnlyDifferences(e.target.checked)} /> Show only differences</label>
+      </div>
+      <p className="analysis-small">Read the label and unit with each value. Frequency, availability and usefulness measure different things. Counts shown belong to that source; they are not a shared sample.</p>
+      <div className="analysis-comparisons">{visible.map(c => <article className="analysis-comparison" key={c.spec.constructId}>
+        <div className="analysis-section-heading"><h2>{constructById(c.spec.constructId).name}</h2><span className={`analysis-status${c.flagged ? ' analysis-status--attention' : ''}`}>{c.flagged ? 'Different source signals' : 'No respondent difference flagged'}</span></div>
+        <div className="analysis-source-cells">{(['student', 'faculty', 'institution', 'objective'] as const).map(key => {
+          const cell = c.cells[key];
+          return <div className={key === 'objective' ? 'analysis-source-cell analysis-source-cell--record' : 'analysis-source-cell'} key={key}>
+            <p className="report-kicker">{key === 'objective' ? 'Course records & other evidence' : pointLabels[key]}</p>
+            {cell ? <><strong>{cell.display}</strong><p>{cell.caption}</p><small>{cell.n !== null ? `${cell.n} contributing records or responses` : 'Derived from course evidence'}{cell.evidenceSource ? ` · ${sourceLabel[cell.evidenceSource]}` : ''}</small></> : <p className="analysis-small">No reading for this source.</p>}
+          </div>;
+        })}</div>
+        <p className="analysis-comparison-note">{c.flagged ? 'The respondent readings cross the model’s difference threshold. Compare the questions and the evidence before interpreting why.' : 'No respondent difference crosses the model’s threshold. This does not mean the sources establish the same thing or that the outcome is positive.'} {!c.cells.objective && 'No independent course-record reading is attached to this topic.'}</p>
+        <details className="analysis-inline-detail"><summary>Comparison rules</summary><p>{comparisonThresholdStatement} Current result: {c.divergence}. A record can provide context without directly validating a respondent’s account.</p></details>
+        <button type="button" className="btn--link" onClick={() => onOpenFinding(c.spec.findingId)}>Inspect the related finding →</button>
+      </article>)}</div>
+      {!visible.length && <p className="analysis-empty">No respondent differences meet the current threshold. Clear the filter to inspect all sources.</p>}
+      <details className="analysis-disclosure"><summary>Full summaries by respondent group</summary><div>
       <div className="panels">
         <div className="panel">
           <h3>Students</h3>
@@ -170,11 +189,12 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
         </div>
       </div>
 
-      <p className="section-label">Within-source validation</p>
+      </div></details>
+      <details className="analysis-disclosure"><summary>How general ratings compare with specific examples</summary><div>
+      <p className="section-label">Within-source checks</p>
       <p className="section-note">
-        Before any source is set against another, each is set against itself. On the readings that matter most, every respondent answered twice: once as a
-        judgement, once anchored to a quantity, a specific occasion or what followed from it. {validationRule} A mean gap of {BIAS_THRESHOLD.toFixed(1)} or more
-        on the shared scale is reported as directional, not as noise.
+        Some topics are asked as a general rating and a specific example. These are related measures, not necessarily identical ones. {validationRule} A mean gap of {BIAS_THRESHOLD.toFixed(1)} or more
+        on the shared scale is flagged for investigation. These are configured demo rules, not proof that a respondent is unreliable.
       </p>
       <div className="table-scroll">
         <table className="data">
@@ -183,9 +203,9 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
               <th>Reading checked</th>
               <th>Source</th>
               <th>n</th>
-              <th>Corroborated</th>
-              <th>Marginal</th>
-              <th>Contradicted</th>
+              <th>Within alignment threshold</th>
+              <th>Some difference</th>
+              <th>Larger difference</th>
               <th>Judgement</th>
               <th className="col-objective">Anchor</th>
               <th>Mean gap</th>
@@ -212,7 +232,7 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
                   {v.bias === 'none' ? (
                     <span className="muted">
                       {v.meanSignedGap > 0 ? '+' : ''}
-                      {f1(v.meanSignedGap)} · within noise
+                      {f1(v.meanSignedGap)} · below the directional threshold
                     </span>
                   ) : (
                     <>
@@ -220,7 +240,7 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
                         {v.meanSignedGap > 0 ? '+' : ''}
                         {f1(v.meanSignedGap)}
                       </span>
-                      <span className="cell__caption">{v.bias === 'over-reports' ? v.pair.ifPrimaryHigher : v.pair.ifPrimaryLower}</span>
+                      <span className="cell__caption">{v.bias === 'over-reports' ? 'General ratings map higher than examples' : 'Examples map higher than general ratings'}</span>
                     </>
                   )}
                 </td>
@@ -229,11 +249,13 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
           </tbody>
         </table>
       </div>
-      <p className="section-note">{validationDisposition}</p>
+      <p className="section-note">All answers are retained. A gap alone does not establish its cause or show which answer is more accurate.</p>
+      </div></details>
+      <details className="analysis-disclosure"><summary>Detailed comparison table & scale charts</summary><div>
 
       <p className="section-label">Discrepancy matrix</p>
       <p className="section-note">
-        Each row is one construct. The first three columns are what people report; the fourth is what the record, the artefacts or the system data show. {comparisonThresholdStatement} Signs mark each reading against its own threshold: + positive, − negative, · neutral. The line under each row says what the objective evidence settles.
+        Each row is one construct. The first three columns are what people report; the fourth is what the record, the artefacts or the system data show. {comparisonThresholdStatement} Signs mark each reading against its own threshold: + positive, − negative, · neutral. The notes beneath each row describe the model’s interpretation; source agreement is not proof of a cause.
       </p>
       <div className="table-scroll">
         <table className="data matrix-table">
@@ -283,7 +305,7 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
                 <tr className="adjudication">
                   <td colSpan={6}>
                     {c.flagged && c.supports && c.supports !== 'none' && <span className="marker">Objective evidence is consistent with {pointLabels[c.supports].toLowerCase()}. </span>}
-                    {c.flagged && c.supports === 'none' && <span className="marker">No objective source adjudicates this construct. </span>}
+                    {c.flagged && c.supports === 'none' && <span className="marker">No record signal matches a respondent signal on this comparison. </span>}
                     {c.spec.adjudication}
                   </td>
                 </tr>
@@ -318,6 +340,7 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
             );
           })}
       </div>
+      </div></details>
     </div>
   );
 };

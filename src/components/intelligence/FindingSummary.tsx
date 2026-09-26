@@ -2,7 +2,7 @@ import type { Dataset } from '../../engine/dataset';
 import type { Finding, FindingMetric } from '../../data/types';
 import { resolveMetric, metricN } from '../../engine/aggregate';
 import { withUnit, share } from '../../lib/format';
-import { analysisCopy } from '../../data/analysisPresentation';
+import { analysisCopy, metricLabels } from '../../data/analysisPresentation';
 import { sourceLabel } from '../../data/indicators';
 
 export const formatFindingMetric = (dataset: Dataset, metric: FindingMetric) => {
@@ -14,7 +14,7 @@ export const formatFindingMetric = (dataset: Dataset, metric: FindingMetric) => 
 
 export const FindingMetrics = ({ finding, dataset }: { finding: Finding; dataset: Dataset }) => <dl className="analysis-metrics">
   {finding.overviewMetrics.map(m => <div key={m.label}>
-    <dt>{m.label}</dt><dd>{formatFindingMetric(dataset, m)}</dd>
+    <dt>{metricLabels[m.label] ?? m.label}</dt><dd>{formatFindingMetric(dataset, m)}</dd>
     {m.metric.kind !== 'derived' && metricN(dataset, m.metric) !== null && <span>{metricN(dataset, m.metric)} contributing responses</span>}
   </div>)}
 </dl>;

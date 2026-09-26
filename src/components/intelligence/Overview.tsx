@@ -10,7 +10,7 @@ import { ChainView } from '../report/ChainView';
 import { readChain } from '../../engine/report';
 import { allDomainBands } from '../../engine/bands';
 import { course } from '../../data/course';
-import { actionTitles } from '../../data/analysisPresentation';
+import { actionTitles, actionSummaries } from '../../data/analysisPresentation';
 import { groupNouns } from '../../instruments';
 
 export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigate, onOpenConstruct }: {
@@ -35,7 +35,7 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
     <section className="analysis-brief" aria-labelledby="brief-title">
       <div className="analysis-brief__lead"><p className="section-label">Start here</p>
         <h2 id="brief-title">{lead ? actionTitles[lead.id] : 'Review the current evidence before choosing an action.'}</h2>
-        <p>{lead ? lead.recommendation.action : 'No action-linked finding currently meets all its evidence rules. Explore the profile and evidence gaps below.'}</p>
+        <p>{lead ? actionSummaries[lead.id] : 'No action-linked finding currently meets all its evidence rules. Explore the profile and evidence gaps below.'}</p>
         {lead && <p className="analysis-owner"><strong>Proposed owner</strong> {lead.recommendation.owner}</p>}
         <button type="button" className="btn" onClick={() => onNavigate('recommendations')}>Review the action plan →</button>
         {lead && <p className="analysis-small">First in the current planning order, based on evidence coverage and the share of students reached. This is not a certainty score.</p>}
@@ -56,14 +56,14 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
       </div>
       <p className="analysis-lede">The figures describe the course as a whole. Each finding opens its sources, limits and suggested response.</p>
       <div className="analysis-finding-grid">{analysis.concerns.map(f => <FindingSummary key={f.id} finding={f} dataset={dataset} onOpenFinding={onOpenFinding}
-        action={analysis.actions.find(a => a.findingId === f.id)?.recommendation.action.split('.')[0]} />)}</div>
+        action={actionSummaries[analysis.actions.find(a => a.findingId === f.id)?.id ?? '']} />)}</div>
       {analysis.concerns.length === 0 && <p className="analysis-empty">No problem findings meet all their current rules. This does not establish that the course is problem-free.</p>}
       <div className="analysis-finding-grid analysis-secondary">{[...analysis.strengths, ...analysis.questions].map(f => <FindingSummary key={f.id} finding={f} dataset={dataset} onOpenFinding={onOpenFinding} />)}</div>
       {analysis.inactive.length > 0 && <p className="analysis-small">{analysis.inactive.length} further {analysis.inactive.length === 1 ? 'finding does' : 'findings do'} not meet the current rules. Inspect these under “Not currently supported” in All findings.</p>}
     </section>
 
     <section className="analysis-section" id="quality-profile" aria-labelledby="profile-title">
-      <p className="section-label">02 · The full profile</p><h2 id="profile-title">Where the evidence is strong—and where it is missing</h2>
+      <p className="section-label">02 · The full profile</p><h2 id="profile-title">Quality across the course</h2>
       <p className="analysis-lede">Each domain covers several aspects of quality. A domain can contain strengths and concerns at the same time. Its label reflects the model’s rules and available evidence, not an overall course score.</p>
       <DomainProfile dataset={dataset} onOpenConstruct={onOpenConstruct} />
       <details className="analysis-disclosure"><summary>How learning becomes a usable skill</summary><div><p className="analysis-lede">This sequence helps locate questions to investigate. A stage below its threshold does not prove the cause of a later outcome.</p><ChainView chain={readChain(dataset)} /></div></details>
