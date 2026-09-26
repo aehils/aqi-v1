@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useDialog } from '../../lib/useDialog';
 import type { Dataset } from '../../engine/dataset';
 import type { ViewerSubmission } from '../../engine/session';
 import { findingById } from '../../data/findings';
@@ -15,6 +16,8 @@ import { constructBand, bandLabel } from '../../engine/bands';
 import { BandTag } from '../shell/BandTag';
 import { EvidenceBlock } from './EvidenceBlock';
 import { f1, f2, withUnit, opLabel } from '../../lib/format';
+import { analysisCopy, actionTitles } from '../../data/analysisPresentation';
+import { FindingMetrics } from '../intelligence/FindingSummary';
 import { recommendationById } from '../../data/recommendations';
 
 const indicatorValue = (ds: Dataset, id: string): { value: string; n: string } => {
@@ -49,19 +52,7 @@ export const FindingDrawer = ({ findingId, dataset, submission, onClose, onOpenC
   const ev = evaluateTrigger(f, dataset);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    ref.current?.focus();
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [onClose, findingId]);
+  useDialog(ref, onClose, findingId);
 
   const contributingGroups = new Set(f.indicatorIds.map((i) => indicatorById(i).source));
   const viewerOpen = (() => {
@@ -84,20 +75,29 @@ export const FindingDrawer = ({ findingId, dataset, submission, onClose, onOpenC
             {f.id} · {f.domainIds.map((d) => `Domain ${domainById(d).number}`).join(' · ')}
           </span>
           {f.kind === 'relationship' ? <span className="chip">Association</span> : <BandTag band={constructBand(dataset, f.lineage.constructId).band} title="Band of the lineage construct, derived live" />}
-          {!ev.fires && <span className="nearmiss">Rule did not fire with the current evidence base</span>}
+          {!ev.fires && <span className="nearmiss">Not currently supported</span>}
           <button type="button" className="btn btn--secondary" style={{ marginLeft: 'auto', padding: '6px 12px' }} onClick={onClose}>
             Close
           </button>
         </div>
         <div className="drawer__body">
           <section className="layer layer--finding">
-            <h3>1 · Finding — what the evidence shows</h3>
-            <h2 id="drawer-title">{f.headline}</h2>
+            <p className="section-label">{ev.fires ? (f.kind === 'strength' ? 'Strength to preserve' : f.kind === 'relationship' ? 'Question to investigate' : 'Course finding') : 'Candidate finding · conditions not met'}</p>
+            <h2 id="drawer-title">{analysisCopy[f.id]?.title ?? f.title}</h2>
+            <p>{ev.fires ? f.headline : 'The current evidence does not meet all conditions for this finding. The data below explains what is and is not supported; no action is proposed on this basis.'}</p>
+            <FindingMetrics finding={f} dataset={dataset} />
             {f.distinction && <p className="small muted">{f.distinction}</p>}
           </section>
 
-          <section>
-            <h3>2 · Rule that fired</h3>
+          {ev.fires && f.recommendationIds.length > 0 && <section className="analysis-drawer-action">
+            <h3>What to do with this finding</h3>
+            {f.recommendationIds.map(id => { const action = recommendationById(id); return <div key={id}>
+              <h4>{actionTitles[id]}</h4><p>{action.action}</p><p className="analysis-small"><strong>Proposed owner:</strong> {action.owner}<br /><strong>Review:</strong> {action.reviewPoint}</p>
+            </div>; })}
+            <p className="analysis-small">Proposals for discussion; not assigned or completed.</p>
+          </section>}
+          <section className="layer layer--hypothesis"><h3>What remains uncertain</h3><p>{f.hypothesis}</p></section>
+          <details className="analysis-disclosure"><summary>Check the finding’s evidence rules</summary><div>
             <p>{f.trigger.plain}</p>
             <pre className="expression">{f.trigger.expression}</pre>
             <div className="table-scroll">
@@ -124,17 +124,16 @@ export const FindingDrawer = ({ findingId, dataset, submission, onClose, onOpenC
                         {opLabel[t.term.op]} {t.thresholdLabel}
                       </td>
                       <td className="num">{t.n ?? '—'}</td>
-                      <td className={t.passed ? 'result-true' : 'result-false'}>{t.passed ? 'true' : 'false'}</td>
+                      <td className={t.passed ? 'result-true' : 'result-false'}>{t.passed ? 'Met' : 'Not met'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="small muted">All terms must evaluate true for the rule to fire. Thresholds are stated, not tuned to the data.</p>
-          </section>
+            <p className="small muted">All conditions must be met for this finding to be supported. These are the model’s configured thresholds, not a test of causation.</p>
+          </div></details>
 
-          <section>
-            <h3>3 · Contributing indicators</h3>
+          <details className="analysis-disclosure"><summary>All contributing measurements</summary><div>
             <div className="table-scroll">
               <table className="data">
                 <thead>
@@ -167,15 +166,13 @@ export const FindingDrawer = ({ findingId, dataset, submission, onClose, onOpenC
                 </tbody>
               </table>
             </div>
-          </section>
+          </div></details>
 
-          <section className="layer layer--evidence">
-            <h3>4 · Underlying evidence</h3>
+          <details className="analysis-disclosure"><summary>Source records, charts & assessment evidence</summary><div>
             <EvidenceBlock refs={f.evidenceRefs} dataset={dataset} />
-          </section>
+          </div></details>
 
-          <section>
-            <h3>5 · Qualitative evidence — illustration, not proof</h3>
+          <details className="analysis-disclosure"><summary>Respondent comments & your account</summary><div><p className="analysis-small">Comments illustrate a finding; they do not establish how common it is.</p>
             {quotes.length === 0 && !viewerOpen && <p className="empty-state">No open responses were coded to this finding.</p>}
             {quotes.map((v) => (
               <blockquote className="quote" key={v.id}>
@@ -189,21 +186,13 @@ export const FindingDrawer = ({ findingId, dataset, submission, onClose, onOpenC
               <blockquote className="quote quote--viewer">
                 {viewerOpen.text}
                 <footer>
-                  Your response · {roleLabels[submission.role]} · {viewerOpen.q.id} · not scored
+                  Your uncoded account · {roleLabels[submission.role]} · {viewerOpen.q.id} · not scored or matched to this finding
                 </footer>
               </blockquote>
             )}
-          </section>
+          </div></details>
 
-          <section className="layer layer--hypothesis">
-            <h3>6 · Diagnostic hypothesis — requires investigation, not a conclusion</h3>
-            <div className="hypothesis">
-              <p>{f.hypothesis}</p>
-            </div>
-          </section>
-
-          <section>
-            <h3>7 · Construct lineage</h3>
+          <details className="analysis-disclosure"><summary>Where this sits in the quality model</summary><div>
             <div className="lineage" aria-label="Domain to construct to dimension to indicator to evidence">
               <span className="lineage__step">
                 <small>Domain</small>
@@ -241,20 +230,8 @@ export const FindingDrawer = ({ findingId, dataset, submission, onClose, onOpenC
                 );
               })}
             </div>
-          </section>
+          </div></details>
 
-          {f.recommendationIds.length > 0 && (
-            <section>
-              <h3>Recommendations drawn from this finding</h3>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
-                {f.recommendationIds.map((r) => (
-                  <li key={r} className="small">
-                    {r} · {recommendationById(r).action.split('.')[0]}.
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
           {f.kind === 'relationship' && (
             <p className="small muted">
               Related strength: <button type="button" className="btn--link" onClick={() => onOpenFinding('F5')}>F5 Instructional clarity</button>.

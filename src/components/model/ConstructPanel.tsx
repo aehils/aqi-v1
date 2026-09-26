@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useDialog } from '../../lib/useDialog';
 import type { Dataset } from '../../engine/dataset';
 import { constructById, constructsInDomain } from '../../data/constructs';
 import { domainById } from '../../data/domains';
@@ -15,17 +16,7 @@ export const ConstructPanel = ({ constructId, dataset, onClose }: { constructId:
   const inds = indicatorsForConstruct(constructId);
   const others = constructsInDomain(c.domainId).filter((x) => x.id !== c.id);
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    ref.current?.focus();
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [onClose]);
+  useDialog(ref, onClose, constructId);
   return (
     <div className="cpanel-backdrop" onClick={onClose}>
       <div className="cpanel" role="dialog" aria-modal="true" aria-labelledby="cpanel-title" ref={ref} tabIndex={-1} onClick={(e) => e.stopPropagation()}>

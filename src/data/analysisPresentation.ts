@@ -15,3 +15,27 @@ export const actionTitles: Record<string, string> = {
   R4: 'Pilot smaller participation groups',
   R5: 'Monitor feedback using release records',
 };
+
+export const actionSummaries: Record<string, string> = {
+  R1: 'Return feedback before the next assessment and provide a short task where students can use the advice.',
+  R2: 'Review assessments against the intended learning outcomes, give applying knowledge more weight, and agree marking criteria before setting the papers.',
+  R3: 'Provide low-bandwidth course materials, an offline download option and a supported route to campus facilities.',
+  R4: 'Try smaller tutorial groups for participatory work and check whether more students experience an opportunity to contribute.',
+  R5: 'Use submission and feedback-release timestamps to identify delays against the course policy.',
+};
+
+export const metricLabels: Record<string, string> = {
+  'ILOs at Apply or above': 'Outcomes requiring applied skills',
+  'Marks at Apply or above': 'Marks for applying knowledge',
+  'Analysis items': 'Score on analysis tasks',
+  'Application items': 'Score on application tasks',
+  'Students, timeliness': 'Students: feedback timing',
+  'Median turnaround': 'Typical feedback wait (median)',
+  'Releases followed by a task': 'Feedback followed by a task',
+  'Administrators declaring the LMS': 'Staff reporting a learning platform',
+  'Students experiencing it': 'Students using it in the course',
+  'Course-space access': 'Students accessing the platform',
+  'Lecturers, provided': 'Participation: lecturer rating',
+  'Students, experienced': 'Participation: student rating',
+  'Enrolment against largest room': 'Class size / largest room capacity',
+};
