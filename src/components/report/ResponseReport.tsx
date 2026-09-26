@@ -10,7 +10,6 @@ import { domainById } from '../../data/domains';
 import { questionById, roleLabels, groupNouns, instruments } from '../../instruments';
 import { f1, withUnit } from '../../lib/format';
 import { findingById } from '../../data/findings';
-import { course } from '../../data/course';
 import { seedDataset } from '../../engine/dataset';
 import { ChainView } from './ChainView';
 import { resolveMetric } from '../../engine/aggregate';
@@ -50,11 +49,7 @@ export const ResponseReport = ({ submission, dataset, onContinue, onOpenFinding 
   return (
     <div className="column report report-page">
       <header className="report-heading">
-        <div><p className="section-label">Your evaluation · {roleLabels[report.role]} report</p>
-          <h1>Your experience. A clearer way forward.</h1>
-          <p>What you shared about {course.code}, what the course evidence adds, and practical steps to discuss next.</p>
-        </div>
-        <span className="report-complete">✓ Evaluation complete</span>
+        <p className="section-label">Your evaluation · {roleLabels[report.role]} report</p>
       </header>
 
       <section className="report-summary" aria-labelledby="summary-title">

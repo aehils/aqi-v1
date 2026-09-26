@@ -13,7 +13,7 @@ export const actionMetric = (dataset: Dataset, metric: MetricSpec, unit?: string
 export const actionPlanMarkdown = (dataset: Dataset): string => {
   const { actions } = buildCourseAnalysis(dataset);
   return [
-    `# ${course.code} — proposed course action plan`,
+    `# ${course.code}: proposed course action plan`,
     `${course.title} · ${course.session}`,
     'Simulated evidence. Actions and owners are proposals for discussion, not approved assignments. No next-cycle results have been collected.',
     'Planning order uses the number of supporting source types × the share of the cohort reached. This is not a confidence score.',
