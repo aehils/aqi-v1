@@ -2,7 +2,7 @@ import type { ChainReading } from '../../engine/report';
 import { inquiryFraming } from '../../data/inquiry';
 import { withUnit } from '../../lib/format';
 
-const statusLabel: Record<string, string> = {
+export const statusLabel: Record<string, string> = {
   intact: 'Meets threshold',
   weak: 'Below target',
   cut: 'Below minimum',

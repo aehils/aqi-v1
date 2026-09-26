@@ -75,14 +75,11 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
 
   return (
     <div className="column analysis-page">
-      <header className="analysis-heading"><p className="section-label">Course analysis · Compare sources</p>
-        <h1>One course, different perspectives.</h1>
-        <p>Compare what students experience, what lecturers provide, and what the records show. Different accounts can reveal where to investigate; they do not tell us which person is wrong.</p>
-      </header>
+      <header className="report-heading"><p className="section-label">Course analysis · Compare sources</p></header>
       <div className="analysis-comparison-toolbar"><p><strong>{cmp.filter(c => c.flagged).length} of {cmp.length} topics</strong> show different respondent signals under the model’s rules.</p>
         <label><input type="checkbox" checked={onlyDifferences} onChange={e => setOnlyDifferences(e.target.checked)} /> Show only differences</label>
       </div>
-      <p className="analysis-small">Read the label and unit with each value. Frequency, availability and usefulness measure different things. Counts shown belong to that source; they are not a shared sample.</p>
+      <p className="analysis-small">Different accounts show where to investigate; they do not tell us which person is wrong. Read the label and unit with each value. Frequency, availability and usefulness measure different things. Counts shown belong to that source; they are not a shared sample.</p>
       <div className="analysis-comparisons">{visible.map(c => <article className="analysis-comparison" key={c.spec.constructId}>
         <div className="analysis-section-heading"><h2>{constructById(c.spec.constructId).name}</h2><span className={`analysis-status${c.flagged ? ' analysis-status--attention' : ''}`}>{c.flagged ? 'Different source signals' : 'No respondent difference flagged'}</span></div>
         <div className="analysis-source-cells">{(['student', 'faculty', 'institution', 'objective'] as const).map(key => {
