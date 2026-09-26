@@ -166,6 +166,99 @@ td.num,
   background: var(--positive);
 }
 
+.stepper {
+  /* Sits at the right end of the tab row; on its own on the report. */
+  margin-left: auto;
+  align-self: center;
+}
+
+/* On narrow screens the stepper wraps below the tabs. */
+@media (max-width: 900px) {
+  .stepper {
+    padding: 8px 0 12px;
+  }
+}
+
+.stepper__inner {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.stepper__step {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+/* Connector drawn before every step but the first. */
+.stepper__step + .stepper__step::before {
+  content: '';
+  width: 48px;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.stepper__step--done + .stepper__step::before {
+  background: var(--accent);
+}
+
+.stepper__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 6px 4px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.stepper__button:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.stepper__button:hover:not(:disabled) .stepper__index {
+  border-color: var(--accent);
+}
+
+.stepper__button[aria-current='step'] {
+  color: var(--ink);
+  cursor: default;
+}
+
+.stepper__index {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  display: inline-grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  transition: border-color var(--t);
+}
+
+.stepper__button[aria-current='step'] .stepper__index {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.stepper__step--done .stepper__index {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .nav {
   border-bottom: 1px solid var(--line);
   background: var(--surface);
@@ -175,6 +268,14 @@ td.num,
   max-width: none;
   margin: 0 auto;
   padding: 0 var(--margin);
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--s4);
+  /* Height of a tab row, so the bar holds steady on the report, which has no tabs. */
+  min-height: 51px;
+}
+
+.nav__tabs {
   display: flex;
   gap: var(--s4);
 }

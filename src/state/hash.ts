@@ -10,10 +10,12 @@ export const parseHash = (hash: string): { tab: Tab; findingId: string | null } 
   return { tab: tab as Tab, findingId: tab === 'findings' && rest ? rest : null };
 };
 
-export const writeHash = (tab: Tab, findingId: string | null, active: boolean) => {
+// `push` adds a history entry so the browser's Back button can return to
+// the previous stage; tab and finding changes replace the current entry.
+export const writeHash = (tab: Tab, findingId: string | null, active: boolean, push = false) => {
   const next = active ? (findingId ? `#findings/${findingId}` : `#${tab}`) : '';
-  if (window.location.hash !== next) {
-    if (next) window.history.replaceState(null, '', next);
-    else window.history.replaceState(null, '', window.location.pathname + window.location.search);
-  }
+  if (window.location.hash === next) return;
+  const url = next || window.location.pathname + window.location.search;
+  if (push) window.history.pushState(null, '', url);
+  else window.history.replaceState(null, '', url);
 };

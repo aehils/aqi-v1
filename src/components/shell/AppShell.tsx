@@ -13,7 +13,43 @@ const tabs: { id: Tab; label: string }[] = [
 
 const [sessionYear, sessionSemester] = course.session.split(', ');
 
-export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View; tab: Tab; onTab: (t: Tab) => void; onRestart: () => void; children: ReactNode }) => (
+const steps = [
+  { view: 'report', label: 'Your report' },
+  { view: 'intelligence', label: 'Course analysis' },
+] as const;
+
+const Stepper = ({ view, onReport, onAnalysis }: { view: View; onReport: () => void; onAnalysis: () => void }) => {
+  const current = steps.findIndex((s) => s.view === view);
+  return (
+    <nav className="stepper" aria-label="Progress">
+      <ol className="stepper__inner">
+        {steps.map((s, i) => (
+          <li key={s.view} className={`stepper__step${i < current ? ' stepper__step--done' : ''}`}>
+            <button type="button" className="stepper__button" aria-current={i === current ? 'step' : undefined} onClick={i === 0 ? onReport : onAnalysis} disabled={i === current}>
+              <span className="stepper__index" aria-hidden="true">{i < current ? '✓' : i + 1}</span>
+              {s.label}
+            </button>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+};
+
+interface ShellProps {
+  view: View;
+  tab: Tab;
+  hasReport: boolean;
+  onTab: (t: Tab) => void;
+  onReport: () => void;
+  onAnalysis: () => void;
+  onRestart: () => void;
+  children: ReactNode;
+}
+
+export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, onRestart, children }: ShellProps) => {
+  const showStepper = hasReport && (view === 'report' || view === 'intelligence');
+  return (
   <div className="shell">
     {view !== 'entry' && (
       <header className="shell__header">
@@ -29,16 +65,21 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
         </div>
       </header>
     )}
-    {view === 'intelligence' && (
-      <nav className="nav" aria-label="Course analysis views">
+    {(showStepper || view === 'intelligence') && (
+      <div className="nav">
         <div className="nav__inner">
-          {tabs.map((t) => (
-            <button key={t.id} type="button" className="nav__tab" aria-current={t.id === tab ? 'page' : undefined} onClick={() => onTab(t.id)}>
-              {t.label}
-            </button>
-          ))}
+          {view === 'intelligence' && (
+            <nav className="nav__tabs" aria-label="Course analysis views">
+              {tabs.map((t) => (
+                <button key={t.id} type="button" className="nav__tab" aria-current={t.id === tab ? 'page' : undefined} onClick={() => onTab(t.id)}>
+                  {t.label}
+                </button>
+              ))}
+            </nav>
+          )}
+          {showStepper && <Stepper view={view} onReport={onReport} onAnalysis={onAnalysis} />}
         </div>
-      </nav>
+      </div>
     )}
     <main className="shell__main">{children}</main>
     <footer className="shell__footer">
@@ -60,4 +101,5 @@ export const AppShell = ({ view, tab, onTab, onRestart, children }: { view: View
       </div>
     </footer>
   </div>
-);
+  );
+};
