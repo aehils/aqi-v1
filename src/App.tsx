@@ -102,6 +102,7 @@ export const App = () => {
       onReport={() => dispatch({ type: 'BACK_TO_REPORT' })}
       onAnalysis={() => dispatch({ type: 'ENTER_INTELLIGENCE', tab: state.tab, findingId: null })}
       onRestart={() => dispatch({ type: 'RESTART' })}
+      onJumpToResults={() => dispatch({ type: 'JUMP_TO_RESULTS' })}
     >
       {content}
       {(state.view === 'intelligence' || state.view === 'report') && state.openFindingId && (

@@ -1,5 +1,6 @@
 import type { AnswerValue, Role } from '../data/types';
 import type { ViewerSubmission } from '../engine/session';
+import { seedDataset } from '../engine/dataset';
 
 export type View = 'entry' | 'role' | 'context' | 'questionnaire' | 'assembly' | 'report' | 'intelligence';
 export type Tab = 'overview' | 'perspectives' | 'findings' | 'recommendations';
@@ -32,6 +33,7 @@ export type Action =
   | { type: 'OPEN_FINDING'; id: string | null }
   | { type: 'OPEN_CONSTRUCT'; id: string | null }
   | { type: 'RESTART' }
+  | { type: 'JUMP_TO_RESULTS' }
   | { type: 'ENTER_INTELLIGENCE'; tab: Tab; findingId: string | null };
 
 export const initialState: State = {
@@ -82,6 +84,13 @@ export const reducer = (state: State, action: Action): State => {
       return { ...state, openConstructId: action.id };
     case 'RESTART':
       return { ...initialState };
+    case 'JUMP_TO_RESULTS': {
+      // Prototyping shortcut: fill any unanswered questions from the first
+      // simulated respondent of the role and go straight to the report.
+      const role = state.role ?? 'student';
+      const answers = { ...seedDataset.responses[role][0].answers, ...(state.role === role ? state.answers : {}) };
+      return { ...state, role, answers, view: 'report', submission: { role, answers }, openFindingId: null, openConstructId: null };
+    }
     case 'ENTER_INTELLIGENCE':
       return { ...state, view: 'intelligence', tab: action.tab, openFindingId: action.findingId };
   }
