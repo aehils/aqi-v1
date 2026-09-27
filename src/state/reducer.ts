@@ -27,6 +27,7 @@ export type Action =
   | { type: 'SUBMIT' }
   | { type: 'ASSEMBLY_DONE' }
   | { type: 'REPORT_DONE' }
+  | { type: 'BACK_TO_REPORT' }
   | { type: 'SET_TAB'; tab: Tab }
   | { type: 'OPEN_FINDING'; id: string | null }
   | { type: 'OPEN_CONSTRUCT'; id: string | null }
@@ -69,7 +70,10 @@ export const reducer = (state: State, action: Action): State => {
     case 'ASSEMBLY_DONE':
       return { ...state, view: 'report' };
     case 'REPORT_DONE':
-      return { ...state, view: 'intelligence', tab: 'overview' };
+      return { ...state, view: 'intelligence', tab: 'overview', openFindingId: null, openConstructId: null };
+    case 'BACK_TO_REPORT':
+      if (!state.submission) return state;
+      return { ...state, view: 'report', openFindingId: null, openConstructId: null };
     case 'SET_TAB':
       return { ...state, tab: action.tab, openFindingId: null, openConstructId: null };
     case 'OPEN_FINDING':

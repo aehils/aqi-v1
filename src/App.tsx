@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer } from 'react';
+import { useEffect, useMemo, useReducer, useRef } from 'react';
 import { reducer, initialState, type State } from './state/reducer';
 import { parseHash, writeHash } from './state/hash';
 import { AppShell } from './components/shell/AppShell';
@@ -25,9 +25,33 @@ const initFromHash = (): State => {
 export const App = () => {
   const [state, dispatch] = useReducer(reducer, undefined, initFromHash);
 
+  // Moving between the report and the course analysis adds a history entry,
+  // so the browser's Back and Forward buttons step between the two stages.
+  const prevView = useRef(state.view);
   useEffect(() => {
-    writeHash(state.tab, state.openFindingId, state.view === 'intelligence');
+    const crossed = (prevView.current === 'report' && state.view === 'intelligence') || (prevView.current === 'intelligence' && state.view === 'report');
+    prevView.current = state.view;
+    writeHash(state.tab, state.openFindingId, state.view === 'intelligence', crossed);
   }, [state.view, state.tab, state.openFindingId]);
+
+  const viewRef = useRef(state.view);
+  viewRef.current = state.view;
+  useEffect(() => {
+    const onPop = () => {
+      const parsed = parseHash(window.location.hash);
+      // Only the report ↔ analysis boundary is in history; `prevView` is set
+      // first so the hash effect doesn't push a duplicate entry.
+      if (parsed && viewRef.current === 'report') {
+        prevView.current = 'intelligence';
+        dispatch({ type: 'ENTER_INTELLIGENCE', tab: parsed.tab, findingId: parsed.findingId });
+      } else if (!parsed && viewRef.current === 'intelligence') {
+        prevView.current = 'report';
+        dispatch({ type: 'BACK_TO_REPORT' });
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   useEffect(() => {
     if (state.view === 'intelligence') return;
@@ -73,7 +97,10 @@ export const App = () => {
     <AppShell
       view={state.view}
       tab={state.tab}
+      hasReport={state.submission !== null}
       onTab={(tab) => dispatch({ type: 'SET_TAB', tab })}
+      onReport={() => dispatch({ type: 'BACK_TO_REPORT' })}
+      onAnalysis={() => dispatch({ type: 'ENTER_INTELLIGENCE', tab: state.tab, findingId: null })}
       onRestart={() => dispatch({ type: 'RESTART' })}
     >
       {content}
