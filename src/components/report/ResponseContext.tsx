@@ -11,7 +11,7 @@ export const ResponseContext = ({ submission }: { submission: ViewerSubmission }
   if (!questions.length) return null;
   return <div className="report-context-answers">
     <h3>Resources and constraints you reported</h3>
-    <p className="report-footnote">These answers add context; they are not an overall quality score. Comparisons exclude your response.</p>
+    <p className="report-footnote">Other respondents who selected the same resources. Counts exclude you.</p>
     {questions.map(q => {
       const answer = submission.answers[q.id];
       const peers = seedDataset.responses[submission.role].filter(r => Array.isArray(r.answers[q.id]));
@@ -24,13 +24,13 @@ export const ResponseContext = ({ submission }: { submission: ViewerSubmission }
             {!answer.length && <p>No options selected.</p>}
             <ul className="report-context-list">{answer.map(key => {
               const count = peers.filter(r => (r.answers[q.id] as string[]).includes(key)).length;
-              return <li key={key}><strong>{q.options?.find(o => o.key === key)?.label ?? key}</strong><span>{count} of {peers.length} other respondents also selected this</span></li>;
+              return <li key={key}><strong>{q.options?.find(o => o.key === key)?.label ?? key}</strong><span>{count} of {peers.length} peers</span><div className="resource-bar" aria-hidden="true"><span style={{ width: `${peers.length ? count / peers.length * 100 : 0}%` }} /></div></li>;
             })}</ul>
           </>}
           {q.type === 'matrix' && typeof answer === 'object' && !Array.isArray(answer) && <ul className="report-context-list">
             {q.rows?.filter(row => answer[row.key] !== undefined).map(row => {
               const cohort = matrixMeanFor(seedDataset, q.indicatorId!, submission.role, row.key);
-              return <li key={row.key}><strong>{row.label}</strong><span>You: {q.options?.find(o => o.key === answer[row.key])?.label ?? answer[row.key]}</span><span>Group: {f1(cohort.mean)}/5 · {cohort.nScoring} scored responses</span></li>;
+              return <li key={row.key}><strong>{row.label}</strong><span>You: {q.options?.find(o => o.key === answer[row.key])?.label ?? answer[row.key]}</span><span>Group: {f1(cohort.mean)}/5 · {cohort.nScoring} scored responses</span>{Number.isFinite(cohort.mean) && <div className="resource-bar" aria-hidden="true"><span style={{ width: `${cohort.mean / 5 * 100}%` }} /></div>}<small>Group scale: 0–5</small></li>;
             })}
           </ul>}
         </div>
