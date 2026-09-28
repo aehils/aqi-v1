@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer, useRef } from 'react';
-import { reducer, initialState, type State } from './state/reducer';
+import { reducer, type State } from './state/reducer';
 import { parseHash, writeHash } from './state/hash';
+import { reportSessionKey, restoreReportState } from './state/reportSession';
 import { AppShell } from './components/shell/AppShell';
 import { Entry } from './components/flow/Entry';
 import { RoleSelect } from './components/flow/RoleSelect';
@@ -17,13 +18,20 @@ import { Recommendations } from './components/recommendations/Recommendations';
 import { buildDataset, computeViewerImpact } from './engine/session';
 
 const initFromHash = (): State => {
-  const parsed = parseHash(window.location.hash);
-  if (!parsed) return initialState;
-  return { ...initialState, view: 'intelligence', tab: parsed.tab, openFindingId: parsed.findingId };
+  let saved: string | null = null;
+  try { saved = window.sessionStorage.getItem(reportSessionKey); } catch { /* Storage may be disabled. */ }
+  return restoreReportState(window.location.hash, saved);
 };
 
 export const App = () => {
   const [state, dispatch] = useReducer(reducer, undefined, initFromHash);
+
+  useEffect(() => {
+    try {
+      if (state.submission) window.sessionStorage.setItem(reportSessionKey, JSON.stringify(state.submission));
+      else window.sessionStorage.removeItem(reportSessionKey);
+    } catch { /* In-memory navigation still works when storage is unavailable. */ }
+  }, [state.submission]);
 
   // Moving between the report and the course analysis adds a history entry,
   // so the browser's Back and Forward buttons step between the two stages.
@@ -31,7 +39,7 @@ export const App = () => {
   useEffect(() => {
     const crossed = (prevView.current === 'report' && state.view === 'intelligence') || (prevView.current === 'intelligence' && state.view === 'report');
     prevView.current = state.view;
-    writeHash(state.tab, state.openFindingId, state.view === 'intelligence', crossed);
+    writeHash(state.tab, state.openFindingId, state.view === 'intelligence', crossed, state.view === 'report');
   }, [state.view, state.tab, state.openFindingId]);
 
   const viewRef = useRef(state.view);
@@ -78,7 +86,15 @@ export const App = () => {
       case 'assembly':
         return <Assembly submission={state.submission!} onDone={() => dispatch({ type: 'ASSEMBLY_DONE' })} />;
       case 'report':
-        return <ResponseReport submission={state.submission!} dataset={dataset} onContinue={() => dispatch({ type: 'REPORT_DONE' })} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
+        if (!state.submission) return <div className="column report-page">
+          <h1 className="report-title">Your Report</h1>
+          <section className="report-disclosure report-unavailable">
+            <h2>Your answers aren’t available in this tab</h2>
+            <p>If you completed the questionnaire in another tab, return there to see your report. If that session has been cleared, you’ll need to complete a new questionnaire.</p>
+            <button type="button" className="btn" onClick={() => dispatch({ type: 'BEGIN' })}>Start a new questionnaire</button>
+          </section>
+        </div>;
+        return <ResponseReport submission={state.submission} dataset={dataset} onContinue={() => dispatch({ type: 'REPORT_DONE' })} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
       case 'intelligence':
         switch (state.tab) {
           case 'overview':

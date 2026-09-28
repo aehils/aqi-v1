@@ -18,15 +18,15 @@ const steps = [
   { view: 'intelligence', label: 'Course analysis' },
 ] as const;
 
-const Stepper = ({ view, onReport, onAnalysis }: { view: View; onReport: () => void; onAnalysis: () => void }) => {
+const Stepper = ({ view, hasReport, onReport, onAnalysis }: { view: View; hasReport: boolean; onReport: () => void; onAnalysis: () => void }) => {
   const current = steps.findIndex((s) => s.view === view);
   return (
     <nav className="stepper" aria-label="Progress">
       <ol className="stepper__inner">
         {steps.map((s, i) => (
-          <li key={s.view} className={`stepper__step${i < current ? ' stepper__step--done' : ''}`}>
-            <button type="button" className="stepper__button" aria-current={i === current ? 'step' : undefined} onClick={i === 0 ? onReport : onAnalysis} disabled={i === current}>
-              <span className="stepper__index" aria-hidden="true">{i < current ? '✓' : i + 1}</span>
+          <li key={s.view} className={`stepper__step${i < current && hasReport ? ' stepper__step--done' : ''}`}>
+            <button type="button" className="stepper__button" aria-current={i === current ? 'step' : undefined} onClick={i === 0 ? onReport : onAnalysis} disabled={i === current} title={i === 0 && !hasReport ? 'Open your report' : undefined}>
+              <span className="stepper__index" aria-hidden="true">{i < current && hasReport ? '✓' : i + 1}</span>
               {s.label}
             </button>
           </li>
@@ -49,7 +49,7 @@ interface ShellProps {
 }
 
 export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, onRestart, onJumpToResults, children }: ShellProps) => {
-  const showStepper = hasReport && (view === 'report' || view === 'intelligence');
+  const showStepper = view === 'report' || view === 'intelligence';
   return (
   <div className="shell">
     {view !== 'entry' && (
@@ -66,7 +66,7 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
         </div>
       </header>
     )}
-    {(showStepper || view === 'intelligence') && (
+    {showStepper && (
       <div className="nav">
         <div className="nav__inner">
           {view === 'intelligence' && (
@@ -78,7 +78,7 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
               ))}
             </nav>
           )}
-          {showStepper && <Stepper view={view} onReport={onReport} onAnalysis={onAnalysis} />}
+          {showStepper && <Stepper view={view} hasReport={hasReport} onReport={onReport} onAnalysis={onAnalysis} />}
         </div>
       </div>
     )}

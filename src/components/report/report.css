@@ -249,3 +249,7 @@
 
 .report-page .report-title { font: 500 clamp(30px, 3.5vw, 42px)/1.2 var(--serif); color: var(--ink); margin: 0 0 24px; }
 .report-page .report-journey .release-count strong { font: 48px/1 var(--serif); }
+
+.report-unavailable { padding: 28px; max-width: 760px; }
+.report-unavailable h2 { font-size: 25px; }
+.report-unavailable p { font-size: 16px; line-height: 1.6; color: var(--ink-muted); margin: 16px 0 24px; }

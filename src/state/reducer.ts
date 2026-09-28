@@ -74,7 +74,6 @@ export const reducer = (state: State, action: Action): State => {
     case 'REPORT_DONE':
       return { ...state, view: 'intelligence', tab: 'overview', openFindingId: null, openConstructId: null };
     case 'BACK_TO_REPORT':
-      if (!state.submission) return state;
       return { ...state, view: 'report', openFindingId: null, openConstructId: null };
     case 'SET_TAB':
       return { ...state, tab: action.tab, openFindingId: null, openConstructId: null };

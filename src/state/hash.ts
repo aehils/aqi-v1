@@ -12,8 +12,8 @@ export const parseHash = (hash: string): { tab: Tab; findingId: string | null } 
 
 // `push` adds a history entry so the browser's Back button can return to
 // the previous stage; tab and finding changes replace the current entry.
-export const writeHash = (tab: Tab, findingId: string | null, active: boolean, push = false) => {
-  const next = active ? (findingId ? `#findings/${findingId}` : `#${tab}`) : '';
+export const writeHash = (tab: Tab, findingId: string | null, active: boolean, push = false, report = false) => {
+  const next = active ? (findingId ? `#findings/${findingId}` : `#${tab}`) : report ? '#report' : '';
   if (window.location.hash === next) return;
   const url = next || window.location.pathname + window.location.search;
   if (push) window.history.pushState(null, '', url);

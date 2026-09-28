@@ -114,7 +114,7 @@ export const ResponseReport = ({ submission, dataset, onContinue, onOpenFinding 
         <div className="contribution-visual" aria-hidden="true"><span>{base}</span><b>+ you</b><span>→ {impact.groupN}</span></div><h3>What your contribution changed</h3>
         <p>Your response is now one of {impact.groupN} {noun} responses in this session. {impact.changedFindings.length === 0 ? 'It did not change which course findings meet the evidence rules.' : `${impact.changedFindings.length} course finding${impact.changedFindings.length === 1 ? '' : 's'} changed status under the evidence rules.`}</p>
         {impact.changedFindings.length > 0 && <ul>{impact.changedFindings.map(id => <li key={id}><button type="button" className="btn--link" onClick={() => onOpenFinding(id)}>{findingById(id).title} →</button></li>)}</ul>}
-        <p className="report-footnote">Session only: reloading clears your answers. No actions have been sent or assigned.</p>
+        <p className="report-footnote">Your report is kept in this browser tab for the session. Starting again clears it. No actions have been sent or assigned.</p>
       </aside>
       <section className="report-next"><div><p className="section-label">Up next · Course analysis</p><h2>See what all the evidence says.</h2></div><button type="button" className="btn" onClick={onContinue}>See the course analysis <span aria-hidden="true">→</span></button></section>
     </div>
