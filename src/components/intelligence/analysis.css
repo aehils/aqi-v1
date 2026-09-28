@@ -54,3 +54,4 @@
 @media(max-width: 480px) {
  .analysis-page .relationship-visual .ring-comparison { grid-template-columns: 1fr; }
 }
+.analysis-page .report-action p + .report-kicker { display: block; margin-top: 14px; }

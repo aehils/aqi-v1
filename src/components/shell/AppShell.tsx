@@ -6,10 +6,10 @@ import logo from '../../assets/logo.png';
 import { HeaderActionsSlot } from './HeaderActions';
 
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'overview', label: 'Course overview' },
-  { id: 'perspectives', label: 'Compare sources' },
-  { id: 'findings', label: 'All findings' },
-  { id: 'recommendations', label: 'Action plan' },
+  { id: 'overview', label: 'Course Overview' },
+  { id: 'perspectives', label: 'Compare Sources' },
+  { id: 'findings', label: 'All Findings' },
+  { id: 'recommendations', label: 'Action Plan' },
 ];
 
 const steps = [

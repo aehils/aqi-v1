@@ -17,7 +17,8 @@ import { readChain } from '../../engine/report';
 import { allDomainBands } from '../../engine/bands';
 import { findingById } from '../../data/findings';
 import { sourceLabel } from '../../data/indicators';
-import { actionTitles, actionSummaries, analysisCopy, findingTitles, compactActions } from '../../data/analysisPresentation';
+import { actionTitles, actionSummaries, analysisCopy, findingTitles, compactActions, studentPlan } from '../../data/analysisPresentation';
+import { planFor } from '../../engine/actionPlan';
 import { groupNouns } from '../../instruments';
 import { withUnit } from '../../lib/format';
 
@@ -25,6 +26,29 @@ type Priority = ReturnType<typeof buildCourseAnalysis>['priorities'][number];
 
 const titleOf = (f: Finding) => findingTitles[f.id] ?? analysisCopy[f.id]?.title ?? f.title;
 const topicOf = (f: Finding) => analysisCopy[f.id]?.topic ?? f.title;
+
+/** Student track: the planned change, when it lands and what the student can do; no owners or planning rules. */
+const StudentPriorityCard = ({ priority: { finding, lead }, order, dataset, onOpenFinding }: {
+  priority: Priority; order: number; dataset: Dataset; onOpenFinding: (id: string) => void;
+}) => {
+  const copy = lead ? studentPlan[lead.id] : undefined;
+  const readings = lead ? planFor(dataset, 'student').find(a => a.id === lead.id)?.readings ?? [] : [];
+  return <article className="report-priority analysis-priority">
+    <p className="report-kicker">Issue {order} · {topicOf(finding)}</p>
+    <h3>{titleOf(finding)}</h3>
+    <EvidenceGraphic finding={finding} dataset={dataset} audience="student" />
+    {copy ? <div className="report-action"><span className="report-kicker">Planned change</span><p>{copy.title}</p>
+      <span className="report-kicker">What you can do now</span><p>{copy.youCanDo}</p>
+    </div> : <p className="report-footnote">No change is planned for this yet.</p>}
+    {copy && <details className="report-priority-detail">
+      <summary>Why this matters & what would change</summary><p>{copy.why}</p><p>{copy.change}</p>
+      <h4>When you should notice it</h4><p>{copy.notice.charAt(0).toUpperCase() + copy.notice.slice(1)}.</p>
+      {readings.length > 0 && <><h4>How you’ll know it’s working</h4>
+        <ul>{readings.map(r => <li key={r.label}>{r.label}: <strong>{r.now}</strong> now; target <strong>{r.target}</strong>.</li>)}</ul></>}
+    </details>}
+    <button className="btn--link" type="button" onClick={() => onOpenFinding(finding.id)}>Open the full finding <span aria-hidden="true">→</span></button>
+  </article>;
+};
 
 const PriorityCard = ({ priority: { finding, lead, further }, order, dataset, onOpenFinding }: {
   priority: Priority; order: number; dataset: Dataset; onOpenFinding: (id: string) => void;
@@ -69,30 +93,37 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
   const chain = readChain(dataset);
   const broken = chain.find(r => r.status === 'cut');
   const shown = analysis.priorities.filter(p => focus === 'all' || p.finding.id === focus);
+  // Students get the issues, planned changes and learning pathway; evidence coverage and audit limits are staff material.
+  const student = submission?.role === 'student';
+  const Card = student ? StudentPriorityCard : PriorityCard;
 
   return <div className="column report-page analysis-page">
     <section className="report-summary analysis-summary" aria-labelledby="brief-title">
       <div className="report-summary__intro"><h2 id="brief-title">Where to focus</h2></div>
       <dl className="report-summary-stats focus-stats">
-        <div><dt><a href="#course-priorities">{analysis.concerns.length === 1 ? 'Issue' : 'Issues'} to act on <span aria-hidden="true">↘</span></a></dt><dd>{analysis.concerns.length}</dd></div>
-        <div><dt><a href={analysis.strengths.length ? '#course-strengths' : '#course-priorities'}>{analysis.strengths.length === 1 ? 'Strength' : 'Strengths'} to keep <span aria-hidden="true">↘</span></a></dt><dd>{analysis.strengths.length}</dd></div>
-        <div><dt><a href="#quality-profile">{limited === 1 ? 'Domain' : 'Domains'} needing evidence <span aria-hidden="true">↘</span></a></dt><dd>{limited}<small> of {domains.length}</small></dd></div>
+        <div><dt><a href="#course-priorities">{analysis.concerns.length === 1 ? 'Issue' : 'Issues'} {student ? 'affecting students' : 'to act on'} <span aria-hidden="true">↘</span></a></dt><dd>{analysis.concerns.length}</dd></div>
+        <div><dt><a href={analysis.strengths.length ? '#course-strengths' : '#course-priorities'}>{student ? `What’s working well` : `${analysis.strengths.length === 1 ? 'Strength' : 'Strengths'} to keep`} <span aria-hidden="true">↘</span></a></dt><dd>{analysis.strengths.length}</dd></div>
+        {student
+          ? <div><dt><a href="#course-contribution">Student responses included <span aria-hidden="true">↘</span></a></dt><dd>{n.student}</dd></div>
+          : <div><dt><a href="#quality-profile">{limited === 1 ? 'Domain' : 'Domains'} needing evidence <span aria-hidden="true">↘</span></a></dt><dd>{limited}<small> of {domains.length}</small></dd></div>}
       </dl>
-      <div className="analysis-lead-action"><div><span className="report-kicker">First proposed action</span><strong>{lead ? actionTitles[lead.id] : 'Review the evidence gaps'}</strong></div><button type="button" className="btn" onClick={() => onNavigate('recommendations')}>Review the action plan →</button></div>
+      {student
+        ? <div className="analysis-lead-action"><div><span className="report-kicker">First planned change</span><strong>{lead && studentPlan[lead.id] ? studentPlan[lead.id].title : 'No change planned yet'}</strong></div><button type="button" className="btn" onClick={() => onNavigate('recommendations')}>See what’s changing →</button></div>
+        : <div className="analysis-lead-action"><div><span className="report-kicker">First proposed action</span><strong>{lead ? actionTitles[lead.id] : 'Review the evidence gaps'}</strong></div><button type="button" className="btn" onClick={() => onNavigate('recommendations')}>Review the action plan →</button></div>}
     </section>
 
     <nav className="report-jumps" aria-label="Course analysis sections">
-      <a href="#course-priorities">Priorities & actions <span>↘</span></a>
-      <a href="#quality-profile">Quality across the course <span>↘</span></a>
+      <a href="#course-priorities">{student ? 'Issues & planned changes' : 'Priorities & actions'} <span>↘</span></a>
+      {!student && <a href="#quality-profile">Quality across the course <span>↘</span></a>}
       <a href="#learning-chain">From learning to skill <span>↘</span></a>
-      <a href="#evidence-scope">Evidence & limits <span>↘</span></a>
+      {student ? <a href="#course-contribution">Your contribution <span>↘</span></a> : <a href="#evidence-scope">Evidence & limits <span>↘</span></a>}
     </nav>
 
     <section className="report-section" id="course-priorities" aria-labelledby="priorities-title">
       <div className="report-section-heading">
         <div><p className="section-label">01 · What matters</p>
-          <h2 id="priorities-title">Issues to act on, strengths to keep</h2>
-          <p>Course-wide findings, paired with a proposed next step.</p>
+          <h2 id="priorities-title">{student ? 'Issues in this course, and what’s planned' : 'Issues to act on, strengths to keep'}</h2>
+          <p>{student ? 'Each issue comes with a planned change and something you can do now.' : 'Course-wide findings, paired with a proposed next step.'}</p>
         </div>
         <label className="report-filter">Filter
           <select aria-label="Filter by priority" value={focus} onChange={e => setFocus(e.target.value)}>
@@ -103,11 +134,11 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
       </div>
       <p className="report-footnote"><button className="btn--link" type="button" onClick={() => onNavigate('findings')}>Browse all findings →</button></p>
       <div className={`report-priorities${shown.length === 1 ? ' report-priorities--focused' : ''}`}>
-        {shown.map(p => <PriorityCard key={p.finding.id} priority={p} order={analysis.priorities.indexOf(p) + 1} dataset={dataset} onOpenFinding={onOpenFinding} />)}
+        {shown.map(p => <Card key={p.finding.id} priority={p} order={analysis.priorities.indexOf(p) + 1} dataset={dataset} onOpenFinding={onOpenFinding} />)}
       </div>
       {analysis.priorities.length === 0 && <p className="analysis-empty">No problem findings meet all their current rules. This does not establish that the course is problem-free.</p>}
       {analysis.strengths.map((f, i) => <aside className="report-strength" key={f.id} id={i === 0 ? 'course-strengths' : undefined}>
-        <p className="report-kicker">A course strength to preserve</p><h3>{titleOf(f)}</h3>
+        <p className="report-kicker">{student ? 'What’s working well' : 'A course strength to preserve'}</p><h3>{titleOf(f)}</h3>
         <EvidenceGraphic finding={f} dataset={dataset} />
         <button className="btn--link" type="button" onClick={() => onOpenFinding(f.id)}>See the supporting evidence →</button>
       </aside>)}
@@ -116,17 +147,17 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
         <EvidenceGraphic finding={f} dataset={dataset} />
         <button className="btn--link" type="button" onClick={() => onOpenFinding(f.id)}>See the supporting evidence →</button>
       </aside>)}
-      {analysis.inactive.length > 0 && <p className="report-footnote">{analysis.inactive.length} further {analysis.inactive.length === 1 ? 'finding does' : 'findings do'} not meet the current rules. Inspect these under “Not currently supported” in All findings.</p>}
+      {!student && analysis.inactive.length > 0 && <p className="report-footnote">{analysis.inactive.length} further {analysis.inactive.length === 1 ? 'finding does' : 'findings do'} not meet the current rules. Inspect these under “Not currently supported” in All findings.</p>}
     </section>
 
-    <section className="report-section" id="quality-profile" aria-labelledby="profile-title">
+    {!student && <section className="report-section" id="quality-profile" aria-labelledby="profile-title">
       <p className="section-label">02 · The full profile</p><h2 id="profile-title">Quality across the course</h2>
       <p className="report-section-lede">Bars show evidence coverage, not quality. Open a domain to inspect its judgment.</p>
       <div className="analysis-profile"><DomainProfile dataset={dataset} onOpenConstruct={onOpenConstruct} /></div>
-    </section>
+    </section>}
 
     <section className="report-section" id="learning-chain" aria-labelledby="chain-title">
-      <p className="section-label">03 · From learning to skill</p><h2 id="chain-title">From intention to capability.</h2>
+      <p className="section-label">{student ? '02' : '03'} · From learning to skill</p><h2 id="chain-title">From intention to capability.</h2>
       <p className="report-section-lede">Course-level readings against model targets. A gap identifies where to investigate.</p>
       <LearningPath chain={chain} />
       <details className="report-disclosure"><summary>See the readings behind each stage <span>{broken ? `First stage below minimum: ${broken.link.name.toLowerCase()}` : 'No stage below minimum'}</span></summary>
@@ -134,7 +165,7 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
       </details>
     </section>
 
-    <section className="report-section" id="evidence-scope" aria-labelledby="scope-title">
+    {!student && <section className="report-section" id="evidence-scope" aria-labelledby="scope-title">
       <p className="section-label">04 · Evidence & limits</p><h2 id="scope-title">What this analysis can tell you</h2>
       <div className="analysis-scope">
         <div><h3>Evidence considered</h3><dl className="analysis-evidence-counts">
@@ -146,19 +177,19 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
           <button type="button" className="btn--link" onClick={() => onNavigate('perspectives')}>Compare the sources →</button>
         </div>
       </div>
-    </section>
+    </section>}
 
-    <aside className="report-contribution">
+    <aside className="report-contribution" id="course-contribution">
       <h3>{impact && submission ? 'What your contribution changed' : 'Whose evidence this is'}</h3>
       <p>{impact && submission
         ? <>Your response is one of {impact.groupN} {groupNouns[impact.role].plural} responses in this analysis. {impact.changedFindings.length === 0 ? 'It did not change which course findings meet the evidence rules.' : `${impact.changedFindings.length} course finding${impact.changedFindings.length === 1 ? '' : 's'} changed status under the evidence rules.`}</>
         : 'You are viewing the simulated evidence base. No response from you is included.'}</p>
       {impact && impact.changedFindings.length > 0 && <ul>{impact.changedFindings.map(id => <li key={id}><button type="button" className="btn--link" onClick={() => onOpenFinding(id)}>{titleOf(findingById(id))} →</button></li>)}</ul>}
-      <p className="report-footnote">Proposed actions have not been sent to anyone or assigned.</p>
+      <p className="report-footnote">{student ? 'Planned changes are proposals from the course team, not yet confirmed.' : 'Proposed actions have not been sent to anyone or assigned.'}</p>
     </aside>
 
-    <section className="report-next"><div><p className="section-label">Up next · Action plan</p><h2>Turn the priorities into a plan.</h2></div>
-      <button type="button" className="btn" onClick={() => onNavigate('recommendations')}>Open the action plan <span aria-hidden="true">→</span></button>
+    <section className="report-next"><div><p className="section-label">Up next · Action Plan</p><h2>{student ? 'See what’s changing, and when.' : 'Turn the priorities into a plan.'}</h2></div>
+      <button type="button" className="btn" onClick={() => onNavigate('recommendations')}>Open the Action Plan <span aria-hidden="true">→</span></button>
     </section>
   </div>;
 };

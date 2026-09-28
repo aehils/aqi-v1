@@ -218,7 +218,8 @@ export interface Recommendation {
   diagnosis: string;
   action: string;
   owner: string;
-  remeasure: { metric: MetricSpec; label: string; unit?: string; target: string }[];
+  /** `goal` is the target in the metric's own units; `target` is its display wording. */
+  remeasure: { metric: MetricSpec; label: string; unit?: string; target: string; goal: { op: Comparator; value: number } }[];
   target: string;
   reviewPoint: string;
   breadth: { label: string; share: number };

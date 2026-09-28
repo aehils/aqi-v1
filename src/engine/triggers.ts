@@ -18,7 +18,7 @@ export interface TriggerEvaluation {
   fires: boolean;
 }
 
-const compare = (op: Comparator, a: number, b: number): boolean => {
+export const compare = (op: Comparator, a: number, b: number): boolean => {
   switch (op) {
     case '<=':
       return a <= b;
