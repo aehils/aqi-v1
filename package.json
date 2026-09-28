@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "check": "tsx scripts/check-engine.ts",
     "check:report": "tsx scripts/check-report.ts",
-    "check:analysis": "tsx scripts/check-course-analysis.ts"
+    "check:analysis": "tsx scripts/check-course-analysis.ts",
+    "check:navigation": "tsx scripts/check-report-navigation.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
