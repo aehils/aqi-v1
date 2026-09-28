@@ -2620,7 +2620,7 @@ svg.chart text {
 .report-priorities--focused .report-priority__meaning { max-width: 85ch; }
 
 /* Course analysis: decisions first, evidence and method on demand. */
-.analysis-page { max-width: none; }
+.analysis-page { max-width: none; padding-top: var(--s3); }
 .analysis-brief__lead > p:not(.section-label) { max-width: 80ch; color: var(--ink-muted); font-size: 14px; margin-top: 10px; }
 .analysis-brief__lead .btn { margin-top: 20px; }
 .analysis-owner { margin: 18px 0 0; }
@@ -2679,6 +2679,12 @@ svg.chart text {
 .analysis-plan-summary { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 28px; border: 1px solid #c9dcd8; background: #eef4f1; border-radius: 10px; }
 .analysis-plan-summary p { color: var(--ink-muted); font-size: 13px; margin-top: 8px; max-width: 75ch; }
 .analysis-plan-summary button { flex-shrink: 0; }
+.analysis-plan-buttons { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; width: 240px; max-width: 100%; }
+.analysis-plan-buttons .btn { justify-content: center; }
+.btn--copy-plan { background: #1f6f6b; border-color: #1f6f6b; }
+.btn--copy-plan:hover { background: #185955; border-color: #185955; }
+.analysis-copy-status { color: var(--ink-muted); font-size: 14px; }
+.analysis-copy-status:empty { display: none; }
 .analysis-action-card { margin-top: 26px; padding: 28px; border: 1px solid var(--line); border-radius: 10px; background: white; }
 .analysis-action-heading { display: flex; gap: 18px; align-items: center; }
 .analysis-action-heading h2 { font-size: 27px; }

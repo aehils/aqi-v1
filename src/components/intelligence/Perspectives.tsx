@@ -1,37 +1,21 @@
-import { Fragment, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Dataset } from '../../engine/dataset';
-import { allComparisons, comparisonThresholdStatement, type ResolvedCell } from '../../engine/compare';
+import { allComparisons, comparisonThresholdStatement } from '../../engine/compare';
 import { groupSizes, meanFor, selectionRateFor, matrixMeanFor, categoricalFor } from '../../engine/aggregate';
-import { categoricalMaps, DIVERGENCE_THRESHOLD } from '../../data/readings';
+import { categoricalMaps } from '../../data/readings';
 import { constructById } from '../../data/constructs';
-import { Dumbbell } from '../charts/Dumbbell';
+import { SourceReading } from './SourceReading';
+import { FiveDots } from '../report/ReportVisuals';
+import '../report/report.css';
+import './analysis.css';
+import './exploration.css';
 import { f1, share } from '../../lib/format';
 import { sourceLabel } from '../../data/indicators';
 import { allCohortValidation } from '../../engine/validate';
 import { validationRule, BIAS_THRESHOLD } from '../../data/validation';
-import { questionById, groupLabels } from '../../instruments';
+import { groupLabels } from '../../instruments';
 
 const pointLabels = { student: 'Students', faculty: 'Lecturers', institution: 'Academic / admin' } as const;
-
-const Cell = ({ cell, objective }: { cell: ResolvedCell | undefined; objective?: boolean }) => {
-  if (!cell) {
-    return <td className={`cell muted${objective ? ' col-objective' : ''}`}>—</td>;
-  }
-  const mark = cell.signal === 'positive' ? '+' : cell.signal === 'negative' ? '−' : '·';
-  return (
-    <td className={`cell${objective ? ' col-objective' : ''}`}>
-      <span className="cell__value">{cell.display}</span>
-      <span className={`cell__signal signal--${cell.signal}`} aria-label={`${cell.signal} on the stated threshold`}>
-        {mark}
-      </span>
-      <span className="cell__caption">
-        {cell.caption}
-        {cell.evidenceSource ? ` · ${sourceLabel[cell.evidenceSource]}` : ''}
-        {cell.n !== null && cell.format === 'scale' ? ` · n ${cell.n}` : ''}
-      </span>
-    </td>
-  );
-};
 
 /** One reading in a stakeholder panel: a label, an optional caveat, and either a figure or a short breakdown. */
 const Row = ({ label, note, value, items }: { label: string; note?: string; value?: ReactNode; items?: { name: string; value: string }[] }) => (
@@ -54,7 +38,7 @@ const Row = ({ label, note, value, items }: { label: string; note?: string; valu
   </div>
 );
 
-/** Three stakeholder panels and the discrepancy matrix. This screen is the argument. */
+/** One topic at a time: respondent measures, record context, then optional detail. */
 export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onOpenFinding: (id: string) => void }) => {
   const ds = dataset;
   const n = groupSizes(ds);
@@ -71,29 +55,29 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
   const cat = (id: 'IND-ILO-01' | 'IND-TRN-01' | 'IND-MON-01' | 'IND-REV-01') => categoricalFor(ds, id, 'institution', categoricalMaps[id]);
   const cmp = allComparisons(ds);
   const [onlyDifferences, setOnlyDifferences] = useState(false);
+  const [selected, setSelected] = useState(cmp[0]?.spec.constructId ?? '');
   const visible = onlyDifferences ? cmp.filter(c => c.flagged) : cmp;
+  const active = visible.find(c => c.spec.constructId === selected) ?? visible[0];
+  const respondents = active ? (['student', 'faculty', 'institution'] as const).flatMap(key => active.cells[key] ? [{ key, cell: active.cells[key]! }] : []) : [];
+  const absent = active ? (['student', 'faculty', 'institution'] as const).filter(key => !active.cells[key]).map(key => pointLabels[key]) : [];
+  const scaleReadings = respondents.filter(r => r.cell.onFivePoint && Number.isFinite(r.cell.value));
+  const gap = scaleReadings.length >= 2 ? Math.max(...scaleReadings.map(r => r.cell.value)) - Math.min(...scaleReadings.map(r => r.cell.value)) : null;
 
   return (
-    <div className="column analysis-page">
-      <header className="report-heading"><p className="section-label">Course analysis · Compare sources</p></header>
-      <div className="analysis-comparison-toolbar"><p><strong>{cmp.filter(c => c.flagged).length} of {cmp.length} topics</strong> show different respondent signals under the model’s rules.</p>
-        <label><input type="checkbox" checked={onlyDifferences} onChange={e => setOnlyDifferences(e.target.checked)} /> Show only differences</label>
+    <div className="column report-page analysis-page sources-page">
+      <div className="sources-toolbar"><p><strong>{cmp.filter(c => c.flagged).length} of {cmp.length}</strong> topics have different respondent signals</p><label><input type="checkbox" checked={onlyDifferences} onChange={e => setOnlyDifferences(e.target.checked)} /> Differences only</label></div>
+      <div className="sources-workspace">
+        <nav className="source-topics" aria-label="Comparison topics">{visible.map(c => <button type="button" key={c.spec.constructId} aria-pressed={active?.spec.constructId === c.spec.constructId} onClick={() => setSelected(c.spec.constructId)}><strong>{constructById(c.spec.constructId).name}</strong><span>{c.flagged ? 'Different signals' : Object.keys(c.cells).filter(k => k !== 'objective').length < 2 ? 'One respondent source' : 'No difference flagged'}</span></button>)}</nav>
+        {active ? <section className="source-workspace-detail" aria-labelledby="comparison-title">
+          <header className="source-detail-heading"><div><p className="report-kicker">Selected topic</p><h2 id="comparison-title">{constructById(active.spec.constructId).name}</h2></div><span className={`source-status${active.flagged ? ' source-status--difference' : ''}`}>{active.flagged ? 'Different signals' : respondents.length < 2 ? 'No respondent comparison' : 'No difference flagged'}</span></header>
+          <p className="source-comparison-context">{gap !== null ? `${f1(gap)}-point spread between respondent means on the 1–5 scale.` : 'These sources measure different aspects of this topic.'}</p>
+          <div className="respondent-readings">{respondents.map(({ key, cell }) => <article className={`respondent-reading respondent-reading--${key}`} key={key}><h3>{pointLabels[key]}</h3><SourceReading cell={cell} />{!(cell.format === 'share' && cell.n !== null && cell.n <= 12) && <p className="source-sample">{cell.n !== null ? `${cell.n} contributing responses` : 'Sample size unavailable'}</p>}</article>)}</div>
+          {absent.length > 0 && <p className="source-absence">No reading: {absent.join(' · ')}.</p>}
+          <div className="record-context"><div><p className="report-kicker">Course evidence</p><h3>{active.cells.objective?.evidenceSource ? sourceLabel[active.cells.objective.evidenceSource] : 'Record context'}</h3><p>Read alongside the accounts; not verification of an individual response.</p></div>{active.cells.objective ? <SourceReading cell={active.cells.objective} /> : <p>No course-record reading is attached to this topic.</p>}</div>
+          <footer className="source-detail-footer"><details><summary>Interpretation & comparison rules</summary><p>{comparisonThresholdStatement}</p><p>No flag does not establish agreement or a positive outcome. Small groups are descriptive; sample sizes belong to each source.</p><p>{active.spec.adjudication}</p></details><button type="button" className="btn--link" onClick={() => onOpenFinding(active.spec.findingId)}>Inspect related finding →</button></footer>
+        </section> : <p className="analysis-empty" role="status">No topics match. Turn off “Differences only” to see all sources.</p>}
       </div>
-      <p className="analysis-small">Different accounts show where to investigate; they do not tell us which person is wrong. Read the label and unit with each value. Frequency, availability and usefulness measure different things. Counts shown belong to that source; they are not a shared sample.</p>
-      <div className="analysis-comparisons">{visible.map(c => <article className="analysis-comparison" key={c.spec.constructId}>
-        <div className="analysis-section-heading"><h2>{constructById(c.spec.constructId).name}</h2><span className={`analysis-status${c.flagged ? ' analysis-status--attention' : ''}`}>{c.flagged ? 'Different source signals' : 'No respondent difference flagged'}</span></div>
-        <div className="analysis-source-cells">{(['student', 'faculty', 'institution', 'objective'] as const).map(key => {
-          const cell = c.cells[key];
-          return <div className={key === 'objective' ? 'analysis-source-cell analysis-source-cell--record' : 'analysis-source-cell'} key={key}>
-            <p className="report-kicker">{key === 'objective' ? 'Course records & other evidence' : pointLabels[key]}</p>
-            {cell ? <><strong>{cell.display}</strong><p>{cell.caption}</p><small>{cell.n !== null ? `${cell.n} contributing records or responses` : 'Derived from course evidence'}{cell.evidenceSource ? ` · ${sourceLabel[cell.evidenceSource]}` : ''}</small></> : <p className="analysis-small">No reading for this source.</p>}
-          </div>;
-        })}</div>
-        <p className="analysis-comparison-note">{c.flagged ? 'The respondent readings cross the model’s difference threshold. Compare the questions and the evidence before interpreting why.' : 'No respondent difference crosses the model’s threshold. This does not mean the sources establish the same thing or that the outcome is positive.'} {!c.cells.objective && 'No independent course-record reading is attached to this topic.'}</p>
-        <details className="analysis-inline-detail"><summary>Comparison rules</summary><p>{comparisonThresholdStatement} Current result: {c.divergence}. A record can provide context without directly validating a respondent’s account.</p></details>
-        <button type="button" className="btn--link" onClick={() => onOpenFinding(c.spec.findingId)}>Inspect the related finding →</button>
-      </article>)}</div>
-      {!visible.length && <p className="analysis-empty">No respondent differences meet the current threshold. Clear the filter to inspect all sources.</p>}
+      <p className="exploration-note">Ratings, availability and use are different measures. Source differences identify questions, not who is right.</p>
       <details className="analysis-disclosure"><summary>Full summaries by respondent group</summary><div>
       <div className="panels">
         <div className="panel">
@@ -187,157 +171,12 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
       </div>
 
       </div></details>
-      <details className="analysis-disclosure"><summary>How general ratings compare with specific examples</summary><div>
-      <p className="section-label">Within-source checks</p>
-      <p className="section-note">
-        Some topics are asked as a general rating and a specific example. These are related measures, not necessarily identical ones. {validationRule} A mean gap of {BIAS_THRESHOLD.toFixed(1)} or more
-        on the shared scale is flagged for investigation. These are configured demo rules, not proof that a respondent is unreliable.
-      </p>
-      <div className="table-scroll">
-        <table className="data">
-          <thead>
-            <tr>
-              <th>Reading checked</th>
-              <th>Source</th>
-              <th>n</th>
-              <th>Within alignment threshold</th>
-              <th>Some difference</th>
-              <th>Larger difference</th>
-              <th>Judgement</th>
-              <th className="col-objective">Anchor</th>
-              <th>Mean gap</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allCohortValidation(ds).map((v) => (
-              <tr key={v.pair.id} className="values">
-                <td className="construct">
-                  <strong>{constructById(v.pair.constructId).name}</strong>
-                  <br />
-                  <span className="cell__caption">
-                    {questionById(v.pair.primaryQuestionId).id} checked by {questionById(v.pair.validatorQuestionId).id}
-                  </span>
-                </td>
-                <td>{groupLabels[v.pair.role]}</td>
-                <td className="num">{v.n}</td>
-                <td className="num">{Math.round(100 * v.corroborationRate)}%</td>
-                <td className="num">{v.marginal}</td>
-                <td className="num">{v.contradicted}</td>
-                <td className="num">{f1(v.meanPrimary)}</td>
-                <td className="num col-objective">{f1(v.meanImplied)}</td>
-                <td>
-                  {v.bias === 'none' ? (
-                    <span className="muted">
-                      {v.meanSignedGap > 0 ? '+' : ''}
-                      {f1(v.meanSignedGap)} · below the directional threshold
-                    </span>
-                  ) : (
-                    <>
-                      <span className="row-flag">
-                        {v.meanSignedGap > 0 ? '+' : ''}
-                        {f1(v.meanSignedGap)}
-                      </span>
-                      <span className="cell__caption">{v.bias === 'over-reports' ? 'General ratings map higher than examples' : 'Examples map higher than general ratings'}</span>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="section-note">All answers are retained. A gap alone does not establish its cause or show which answer is more accurate.</p>
+      <details className="analysis-disclosure"><summary>General ratings vs specific examples</summary><div>
+        <p className="exploration-note">Example scores are mapped by the demo. A mean gap of {BIAS_THRESHOLD.toFixed(1)} or more is flagged; it does not establish reliability.</p>
+        <div className="paired-insights">{allCohortValidation(ds).map(v => <article className="paired-insight" key={v.pair.id}><header><p className="report-kicker">{groupLabels[v.pair.role]} · {v.n} pairs</p><h3>{constructById(v.pair.constructId).name}</h3></header><FiveDots value={v.meanPrimary} label="Mean general rating" /><FiveDots value={v.meanImplied} label="Mean example · mapped" /><p className="source-sample">{v.n ? `${Math.round(v.corroborationRate * 100)}% within alignment threshold` : 'No scored pairs'}</p></article>)}</div>
+        <p className="exploration-note">{validationRule} All answers are retained.</p>
       </div></details>
-      <details className="analysis-disclosure"><summary>Detailed comparison table & scale charts</summary><div>
 
-      <p className="section-label">Discrepancy matrix</p>
-      <p className="section-note">
-        Each row is one construct. The first three columns are what people report; the fourth is what the record, the artefacts or the system data show. {comparisonThresholdStatement} Signs mark each reading against its own threshold: + positive, − negative, · neutral. The notes beneath each row describe the model’s interpretation; source agreement is not proof of a cause.
-      </p>
-      <div className="table-scroll">
-        <table className="data matrix-table">
-          <thead>
-            <tr>
-              <th rowSpan={2}>Construct</th>
-              <th className="group" colSpan={3}>
-                What people report
-              </th>
-              <th className="group col-objective" rowSpan={2}>
-                What the record shows
-              </th>
-              <th rowSpan={2}>Divergence</th>
-            </tr>
-            <tr>
-              <th>{pointLabels.student}</th>
-              <th>{pointLabels.faculty}</th>
-              <th>{pointLabels.institution}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cmp.map((c) => (
-              <Fragment key={c.spec.constructId}>
-                <tr className="values">
-                  <td className="construct">
-                    <strong>{constructById(c.spec.constructId).name}</strong>
-                    <br />
-                    <button type="button" className="btn--link small" onClick={() => onOpenFinding(c.spec.findingId)}>
-                      Finding {c.spec.findingId}
-                    </button>
-                  </td>
-                  <Cell cell={c.cells.student} />
-                  <Cell cell={c.cells.faculty} />
-                  <Cell cell={c.cells.institution} />
-                  <Cell cell={c.cells.objective} objective />
-                  <td>
-                    {c.flagged ? (
-                      <>
-                        <span className="row-flag">Flagged</span>
-                        <span className="cell__caption">{c.divergence}</span>
-                      </>
-                    ) : (
-                      <span className="muted">{c.divergence}</span>
-                    )}
-                  </td>
-                </tr>
-                <tr className="adjudication">
-                  <td colSpan={6}>
-                    {c.flagged && c.supports && c.supports !== 'none' && <span className="marker">Objective evidence is consistent with {pointLabels[c.supports].toLowerCase()}. </span>}
-                    {c.flagged && c.supports === 'none' && <span className="marker">No record signal matches a respondent signal on this comparison. </span>}
-                    {c.spec.adjudication}
-                  </td>
-                </tr>
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <hr className="hairline" />
-      <p className="section-label">Flagged constructs, source against source</p>
-      <p className="section-note">Each line is a 1 to 5 scale. The two markers are the two sources; the bar between them is the gap the threshold is set against.</p>
-      <div className="dumbbells">
-        {cmp
-          .filter((c) => c.spec.dumbbell)
-          .map((c) => {
-            const a = c.cells[c.spec.dumbbell!.a]!;
-            const b = c.cells[c.spec.dumbbell!.b]!;
-            return (
-              <div key={c.spec.constructId}>
-                <p className="dumbbell__title">{constructById(c.spec.constructId).name}</p>
-                <Dumbbell
-                  a={{ label: pointLabels[c.spec.dumbbell!.a], value: a.value, n: a.n ?? 0 }}
-                  b={{ label: pointLabels[c.spec.dumbbell!.b], value: b.value, n: b.n ?? 0 }}
-                  threshold={DIVERGENCE_THRESHOLD}
-                  flagged={c.flagged}
-                />
-                <p className="dumbbell__note">
-                  {c.cells.objective ? `${sourceLabel[c.cells.objective.evidenceSource ?? 'records']}: ${c.cells.objective.display} ${c.cells.objective.caption}.` : ''} {c.flagged ? 'Flagged.' : 'Within threshold.'}
-                </p>
-              </div>
-            );
-          })}
-      </div>
-      </div></details>
     </div>
   );
 };

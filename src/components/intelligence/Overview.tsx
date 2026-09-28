@@ -15,18 +15,15 @@ import './analysis.css';
 import { ChainView } from '../report/ChainView';
 import { readChain } from '../../engine/report';
 import { allDomainBands } from '../../engine/bands';
-import { course } from '../../data/course';
 import { findingById } from '../../data/findings';
 import { sourceLabel } from '../../data/indicators';
-import { actionTitles, actionSummaries, analysisCopy } from '../../data/analysisPresentation';
+import { actionTitles, actionSummaries, analysisCopy, findingTitles, compactActions } from '../../data/analysisPresentation';
 import { groupNouns } from '../../instruments';
 import { withUnit } from '../../lib/format';
 
 type Priority = ReturnType<typeof buildCourseAnalysis>['priorities'][number];
 
-const compactTitles: Record<string, string> = { F1: 'Feedback arrives too late', F2: 'Assessment underweights application', F3: 'Resources are not reaching students', F4: 'Participation feels different', F5: 'Clear explanations', F6: 'Satisfaction is not demonstrated skill' };
-const compactActions: Record<string, string> = { R1: 'Return feedback before a follow-up practice task.', R2: 'Give application more assessment weight; agree marking criteria upfront.', R3: 'Offer low-bandwidth materials, offline downloads and campus access.', R4: 'Pilot smaller tutorials and check who participates.', R5: 'Track feedback delays against policy using release records.' };
-const titleOf = (f: Finding) => compactTitles[f.id] ?? analysisCopy[f.id]?.title ?? f.title;
+const titleOf = (f: Finding) => findingTitles[f.id] ?? analysisCopy[f.id]?.title ?? f.title;
 const topicOf = (f: Finding) => analysisCopy[f.id]?.topic ?? f.title;
 
 const PriorityCard = ({ priority: { finding, lead, further }, order, dataset, onOpenFinding }: {
@@ -74,8 +71,6 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
   const shown = analysis.priorities.filter(p => focus === 'all' || p.finding.id === focus);
 
   return <div className="column report-page analysis-page">
-    <h1 className="report-title">Course Analysis</h1>
-    <p className="analysis-course-name">{course.code} · {course.title}</p>
     <section className="report-summary" aria-labelledby="brief-title">
       <div className="report-summary__intro"><h2 id="brief-title">Where to focus</h2><p>Priorities from the combined course evidence.</p></div>
       <dl className="report-summary-stats">

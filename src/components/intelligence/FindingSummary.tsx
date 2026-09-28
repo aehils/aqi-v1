@@ -2,7 +2,8 @@ import type { Dataset } from '../../engine/dataset';
 import type { Finding, FindingMetric } from '../../data/types';
 import { resolveMetric, metricN } from '../../engine/aggregate';
 import { withUnit, share } from '../../lib/format';
-import { analysisCopy, metricLabels } from '../../data/analysisPresentation';
+import { analysisCopy, metricLabels, findingTitles } from '../../data/analysisPresentation';
+import { EvidenceGraphic } from '../report/ReportVisuals';
 import { sourceLabel } from '../../data/indicators';
 
 export const formatFindingMetric = (dataset: Dataset, metric: FindingMetric) => {
@@ -26,11 +27,11 @@ export const FindingSummary = ({ finding, dataset, onOpenFinding, action, inacti
   const sources = [...new Set(finding.evidenceRefs.map(e => e.source))];
   return <article className={`analysis-finding analysis-finding--${inactive ? 'inactive' : finding.kind}`}>
     <p className="report-kicker">{inactive ? 'Not currently supported' : finding.kind === 'problem' ? 'Needs attention' : finding.kind === 'strength' ? 'Strength to preserve' : 'Question to investigate'}</p>
-    <h3>{copy?.title ?? finding.title}</h3>
-    <p className="analysis-finding__meaning">{inactive ? 'The current evidence does not meet every condition for this finding. This is not proof that the issue is absent.' : copy?.meaning ?? finding.headline}</p>
-    <FindingMetrics finding={finding} dataset={dataset} />
+    <h3>{inactive ? `Recheck: ${copy?.topic ?? finding.title}` : findingTitles[finding.id] ?? copy?.title ?? finding.title}</h3>
+    {inactive && <p className="analysis-finding__meaning">Current evidence does not meet every rule for this finding.</p>}
+    <EvidenceGraphic finding={finding} dataset={dataset} />
     {action && !inactive && <p className="analysis-finding__action"><strong>Proposed next step</strong><br />{action}</p>}
-    <p className="analysis-source-line">Evidence: {sources.map(s => sourceLabel[s]).join(' · ')}</p>
+    <details className="finding-context"><summary>Context & sources · {sources.length} source types</summary><p>{copy?.meaning ?? finding.headline}</p><p>{sources.map(s => sourceLabel[s]).join(' · ')}</p></details>
     <button type="button" className="btn--link" onClick={() => onOpenFinding(finding.id)}>{inactive ? 'Inspect the unmet conditions' : 'Explore this finding'} <span aria-hidden="true">→</span></button>
   </article>;
 };

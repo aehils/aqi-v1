@@ -39,3 +39,12 @@ export const metricLabels: Record<string, string> = {
   'Students, experienced': 'Participation: student rating',
   'Enrolment against largest room': 'Class size / largest room capacity',
 };
+
+/** Short headings shared by the overview and searchable findings catalogue. */
+export const findingTitles: Record<string, string> = {
+  F1: 'Feedback arrives too late', F2: 'Assessment underweights application',
+  F3: 'Resources are not reaching students', F4: 'Participation feels different',
+  F5: 'Clear explanations', F6: 'Satisfaction is not demonstrated skill',
+};
+
+export const compactActions: Record<string, string> = { R1: 'Return feedback before a follow-up practice task.', R2: 'Give application more assessment weight; agree marking criteria upfront.', R3: 'Offer low-bandwidth materials, offline downloads and campus access.', R4: 'Pilot smaller tutorials and check who participates.', R5: 'Track feedback delays against policy using release records.' };

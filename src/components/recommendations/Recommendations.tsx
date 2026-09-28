@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Dataset } from '../../engine/dataset';
 import { buildCourseAnalysis } from '../../engine/courseAnalysis';
 import { actionPlanMarkdown, actionMetric } from '../../engine/actionPlan';
@@ -6,6 +7,17 @@ import { course } from '../../data/course';
 
 export const Recommendations = ({ dataset, onOpenFinding }: { dataset: Dataset; onOpenFinding: (id: string) => void }) => {
   const { actions, inactive } = buildCourseAnalysis(dataset);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied' | 'error'>('idle');
+  const plainText = actionPlanMarkdown(dataset).replace(/^#{1,3} /gm, '');
+  const copy = async () => {
+    setCopyStatus('copying');
+    try {
+      await navigator.clipboard.writeText(plainText);
+      setCopyStatus('copied');
+    } catch {
+      setCopyStatus('error');
+    }
+  };
   const download = () => {
     const url = URL.createObjectURL(new Blob([actionPlanMarkdown(dataset)], { type: 'text/markdown;charset=utf-8' }));
     const link = document.createElement('a');
@@ -17,9 +29,17 @@ export const Recommendations = ({ dataset, onOpenFinding }: { dataset: Dataset; 
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   return <div className="column analysis-page">
-    <header className="report-heading"><p className="section-label">Course analysis · Action plan</p></header>
-    <div className="analysis-plan-summary"><div><strong>{actions.length} proposed {actions.length === 1 ? 'action' : 'actions'}</strong><p>Only actions linked to currently supported findings are shown. Planning order considers evidence coverage and the share of students reached. These are discussion proposals; no action has been assigned or completed.</p></div><button type="button" className="btn" disabled={!actions.length} onClick={download}>Download action plan ↓</button></div>
-    {actions.length > 0 && <details className="analysis-disclosure"><summary>View or copy the action-plan text</summary><div><p className="analysis-small">The same proposed plan is available here for copying into a course review document.</p><textarea className="analysis-plan-text" aria-label="Proposed action plan text" readOnly value={actionPlanMarkdown(dataset)} /></div></details>}
+    <div className="analysis-plan-summary"><div><strong>{actions.length} proposed {actions.length === 1 ? 'action' : 'actions'}</strong><p>Only actions linked to currently supported findings are shown. Planning order considers evidence coverage and the share of students reached. These are discussion proposals; no action has been assigned or completed.</p></div>
+      <div className="analysis-plan-buttons">
+        <button type="button" className="btn" disabled={!actions.length} onClick={download}>Download action plan ↓</button>
+        <button type="button" className="btn btn--copy-plan" disabled={!actions.length || copyStatus === 'copying'} onClick={copy}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /></svg>
+          Copy as plain-text
+        </button>
+        <span role="status" className="analysis-copy-status">{copyStatus === 'copied' ? 'Copied to clipboard.' : copyStatus === 'error' ? 'Couldn’t copy. Select the text below to copy manually.' : ''}</span>
+      </div>
+    </div>
+    {copyStatus === 'error' && <textarea className="analysis-plan-text" aria-label="Action plan plain text — select to copy" readOnly value={plainText} onFocus={event => event.currentTarget.select()} />}
     {actions.map((a, i) => <article className="analysis-action-card" key={a.id}>
       <div className="analysis-action-heading"><span className="analysis-action-number">{i + 1}</span><div><p className="report-kicker">Proposed action · {a.id}</p><h2>{actionTitles[a.id]}</h2></div></div>
       <p className="analysis-action-text">{a.recommendation.action}</p>
