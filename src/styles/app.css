@@ -326,6 +326,13 @@ td.num,
   flex-wrap: wrap;
 }
 
+/* Prototyping shortcut, sitting just above the footer's right edge. */
+.shell__shortcut {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--s1) var(--margin);
+}
+
 /* ---------- Primitives ---------- */
 
 .btn {

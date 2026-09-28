@@ -44,10 +44,11 @@ interface ShellProps {
   onReport: () => void;
   onAnalysis: () => void;
   onRestart: () => void;
+  onJumpToResults: () => void;
   children: ReactNode;
 }
 
-export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, onRestart, children }: ShellProps) => {
+export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, onRestart, onJumpToResults, children }: ShellProps) => {
   const showStepper = hasReport && (view === 'report' || view === 'intelligence');
   return (
   <div className="shell">
@@ -82,6 +83,13 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
       </div>
     )}
     <main className="shell__main">{children}</main>
+    {view !== 'report' && view !== 'intelligence' && (
+      <div className="shell__shortcut">
+        <button type="button" className="btn--link" style={{ fontSize: 12 }} onClick={onJumpToResults} title="Prototyping shortcut: fills the questionnaire with a simulated response">
+          Jump to results
+        </button>
+      </div>
+    )}
     <footer className="shell__footer">
       <div className="shell__footer-inner">
         <span
