@@ -52,6 +52,7 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
   const showStepper = view === 'report' || view === 'intelligence';
   return (
   <div className="shell">
+    <div className="shell__bars">
     {view !== 'entry' && (
       <header className="shell__header">
         <div className="shell__header-inner">
@@ -82,6 +83,7 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
         </div>
       </div>
     )}
+    </div>
     <main className="shell__main">{children}</main>
     {view !== 'report' && view !== 'intelligence' && (
       <div className="shell__shortcut">
