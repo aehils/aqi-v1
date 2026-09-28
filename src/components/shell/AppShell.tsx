@@ -51,7 +51,7 @@ interface ShellProps {
 export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, onRestart, onJumpToResults, children }: ShellProps) => {
   const showStepper = view === 'report' || view === 'intelligence';
   return (
-  <div className="shell">
+  <div className={`shell${showStepper ? ' shell--results' : ''}`}>
     <div className="shell__bars">
     {view !== 'entry' && (
       <header className="shell__header">
@@ -64,23 +64,19 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
             <span className="sep" aria-hidden="true">|</span>
             {course.institution}
           </div>
+          {showStepper && <Stepper view={view} hasReport={hasReport} onReport={onReport} onAnalysis={onAnalysis} />}
         </div>
       </header>
     )}
-    {showStepper && (
+    {view === 'intelligence' && (
       <div className="nav">
-        <div className="nav__inner">
-          {view === 'intelligence' && (
-            <nav className="nav__tabs" aria-label="Course analysis views">
-              {tabs.map((t) => (
-                <button key={t.id} type="button" className="nav__tab" aria-current={t.id === tab ? 'page' : undefined} onClick={() => onTab(t.id)}>
-                  {t.label}
-                </button>
-              ))}
-            </nav>
-          )}
-          {showStepper && <Stepper view={view} hasReport={hasReport} onReport={onReport} onAnalysis={onAnalysis} />}
-        </div>
+        <nav className="nav__tabs" aria-label="Course analysis views">
+          {tabs.map((t) => (
+            <button key={t.id} type="button" className="nav__tab" aria-current={t.id === tab ? 'page' : undefined} onClick={() => onTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </nav>
       </div>
     )}
     </div>
