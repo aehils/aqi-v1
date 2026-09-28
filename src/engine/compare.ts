@@ -50,16 +50,21 @@ export const formatCell = (ds: Dataset, cell: CellSpec, value: number): string =
   }
 };
 
-export const compareConstruct = (ds: Dataset, spec: ComparisonSpec): ComparisonResult => {
+type Respondent = 'student' | 'faculty' | 'institution';
+const allRespondents: Respondent[] = ['student', 'faculty', 'institution'];
+
+/** `respondents` limits which accounts are shown and compared; records are always kept. */
+export const compareConstruct = (ds: Dataset, spec: ComparisonSpec, respondents: Respondent[] = allRespondents): ComparisonResult => {
   const cells: Partial<Record<Column, ResolvedCell>> = {};
   for (const col of Object.keys(spec.cells) as Column[]) {
+    if (col !== 'objective' && !respondents.includes(col as Respondent)) continue;
     const c = spec.cells[col]!;
     const value = resolveMetric(ds, c.metric);
     const signal = signalFor({ source: 'records', label: '', metric: c.metric, direction: c.direction, good: c.good, bad: c.bad }, value);
     cells[col] = { ...c, column: col, value, n: metricN(ds, c.metric), signal, display: formatCell(ds, c, value) };
   }
-  const respondents = (['student', 'faculty', 'institution'] as Column[]).map((k) => cells[k]).filter((x): x is ResolvedCell => Boolean(x));
-  const five = respondents.filter((c) => c.onFivePoint && !Number.isNaN(c.value));
+  const accounts = (allRespondents as Column[]).map((k) => cells[k]).filter((x): x is ResolvedCell => Boolean(x));
+  const five = accounts.filter((c) => c.onFivePoint && !Number.isNaN(c.value));
   let flagged = false;
   let divergence = 'Sources agree';
   if (five.length >= 2) {
@@ -70,7 +75,7 @@ export const compareConstruct = (ds: Dataset, spec: ComparisonSpec): ComparisonR
     }
   }
   if (!flagged) {
-    const sigs = respondents.map((c) => c.signal);
+    const sigs = accounts.map((c) => c.signal);
     if (sigs.includes('positive') && sigs.includes('negative')) {
       flagged = true;
       divergence = 'Categorical contradiction';
@@ -79,12 +84,14 @@ export const compareConstruct = (ds: Dataset, spec: ComparisonSpec): ComparisonR
   const obj = cells.objective;
   let supports: ComparisonResult['supports'] = null;
   if (obj && flagged) {
-    const match = respondents.find((c) => c.signal === obj.signal);
+    const match = accounts.find((c) => c.signal === obj.signal);
     supports = match ? (match.column as 'student' | 'faculty' | 'institution') : 'none';
   }
   return { spec, cells, flagged, divergence, supports };
 };
 
-export const allComparisons = (ds: Dataset): ComparisonResult[] => comparisons.map((spec) => compareConstruct(ds, spec));
+export const allComparisons = (ds: Dataset, respondents: Respondent[] = allRespondents): ComparisonResult[] =>
+  comparisons.map((spec) => compareConstruct(ds, spec, respondents))
+    .filter((c) => respondents.some((r) => c.cells[r]));
 
 export const comparisonThresholdStatement = `Divergence is flagged at ≥${DIVERGENCE_THRESHOLD.toFixed(1)} between source means on a 5-point scale, or where one source reads positive and another negative on the stated thresholds (a categorical contradiction).`;

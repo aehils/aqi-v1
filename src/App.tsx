@@ -73,6 +73,9 @@ export const App = () => {
   const dataset = useMemo(() => buildDataset(state.submission), [state.submission]);
   const impact = useMemo(() => (state.submission ? computeViewerImpact(state.submission) : null), [state.submission]);
 
+  // The student track reads the course analysis as a student; lecturers and unsigned viewers see the staff view.
+  const audience = state.submission?.role === 'student' ? 'student' as const : 'staff' as const;
+
   const content = (() => {
     switch (state.view) {
       case 'entry':
@@ -100,11 +103,11 @@ export const App = () => {
           case 'overview':
             return <Overview dataset={dataset} impact={impact} submission={state.submission} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} onNavigate={(tab) => dispatch({ type: 'SET_TAB', tab })} onOpenConstruct={(id) => dispatch({ type: 'OPEN_CONSTRUCT', id })} />;
           case 'perspectives':
-            return <Perspectives dataset={dataset} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
+            return <Perspectives dataset={dataset} audience={audience} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
           case 'findings':
             return <FindingsList dataset={dataset} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} onOpenConstruct={(id) => dispatch({ type: 'OPEN_CONSTRUCT', id })} />;
           case 'recommendations':
-            return <Recommendations dataset={dataset} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
+            return <Recommendations dataset={dataset} audience={audience} onOpenFinding={(id) => dispatch({ type: 'OPEN_FINDING', id })} />;
         }
     }
   })();

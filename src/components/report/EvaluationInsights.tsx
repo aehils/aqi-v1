@@ -6,6 +6,8 @@ import { buildReportEvaluation } from '../../engine/reportEvaluation';
 import { resolveMetric } from '../../engine/aggregate';
 import { withUnit } from '../../lib/format';
 import type { AnswerValue, Question } from '../../data/types';
+import { studentPlan } from '../../data/analysisPresentation';
+import { planFor } from '../../engine/actionPlan';
 
 export const answerText = (question: Question, answer: AnswerValue | undefined): string => {
   if (answer === undefined) return 'Not answered';
@@ -31,6 +33,8 @@ export const EvaluationInsights = ({ submission, dataset, onOpenFinding }: {
 }) => {
   const evaluation = useMemo(() => buildReportEvaluation(submission, dataset), [submission, dataset]);
   const [focus, setFocus] = useState('all');
+  const student = submission.role === 'student';
+  const studentReadings = (id: string) => planFor(dataset, 'student').find(a => a.id === id)?.readings ?? [];
   const priorities = evaluation.priorities.filter(p => focus === 'all' || p.finding.id === focus);
 
   return <section className="report-section report-evaluation" id="evaluation" aria-labelledby="evaluation-title">
@@ -50,26 +54,34 @@ export const EvaluationInsights = ({ submission, dataset, onOpenFinding }: {
       {priorities.map(({ finding, guidance, recommendation, relatedQuestions, rank }) => <article className="report-priority" key={finding.id}>
         <div className="report-priority__heading"><span className="report-priority__number">{String(evaluation.priorities.findIndex(p => p.finding.id === finding.id) + 1).padStart(2, '0')}</span><p className="report-kicker">Course finding · {guidance.topic}</p></div>
         <h3>{({ F1: 'Feedback arrives too late', F2: 'Assessment underweights application', F3: 'Available does not mean accessible', F4: 'Participation feels different' } as Record<string, string>)[finding.id] ?? guidance.title}</h3>
-        <EvidenceGraphic finding={finding} dataset={dataset} />
+        <EvidenceGraphic finding={finding} dataset={dataset} audience={student ? 'student' : 'staff'} />
         <div className="report-action"><span className="report-kicker">A step you can take · {submission.role === 'student' ? 'Student' : 'Lecturer'}</span>
           <p>{shortSteps[finding.id]?.[submission.role === 'student' ? 0 : 1] ?? (submission.role === 'student' ? guidance.studentStep : guidance.facultyStep)}</p>
         </div>
 
         <details className="report-priority-detail">
-          <summary>Why this matters & action details</summary><p>{guidance.meaning}</p><p><strong>Owner:</strong> {recommendation.owner}</p>
-          <p className="report-footnote">Priority rule: {rank.basis}. This is a planning rule, not a confidence score. These readings describe the course, not your individual performance.</p>
-          <dl className="report-metrics">{finding.overviewMetrics.map(m => <div key={m.label}><dt>{m.label}</dt><dd>{withUnit(resolveMetric(dataset, m.metric), m.unit)}</dd></div>)}</dl>
+          <summary>{student ? 'Why this matters & what’s planned' : 'Why this matters & action details'}</summary><p>{student ? studentPlan[recommendation.id]?.why ?? guidance.meaning : guidance.meaning}</p>
+          {!student && <p><strong>Owner:</strong> {recommendation.owner}</p>}
+          <p className="report-footnote">{!student && <>Priority rule: {rank.basis}. This is a planning rule, not a confidence score. </>}These readings describe the course, not your individual performance.</p>
+          {!student && <dl className="report-metrics">{finding.overviewMetrics.map(m => <div key={m.label}><dt>{m.label}</dt><dd>{withUnit(resolveMetric(dataset, m.metric), m.unit)}</dd></div>)}</dl>}
         <details className="report-personal-link">
           <summary>{relatedQuestions.length ? `Your related answers (${relatedQuestions.length})` : 'No related answer from you'}</summary>
           {relatedQuestions.length ? relatedQuestions.map(q => <div className="report-linked-answer" key={q.id}>
             <p>{q.text}</p><strong>{answerText(q, submission.answers[q.id])}</strong>
           </div>) : <p>This finding comes from the wider course evidence. It is not a conclusion about your experience.</p>}
         </details>
-          <h4>What still needs investigation</h4><p>{finding.hypothesis}</p>
-          <h4>Proposed course action</h4><p>{recommendation.action}</p>
-          <h4>How progress would be checked</h4>
-          <ul>{recommendation.remeasure.map(m => <li key={m.label}>{m.label}: <strong>{withUnit(resolveMetric(dataset, m.metric), m.unit)}</strong> now; target <strong>{m.target}</strong>.</li>)}</ul>
-          <h4>Review point</h4><p>{recommendation.reviewPoint}</p>
+          {student && studentPlan[recommendation.id] ? <>
+            <h4>Planned change</h4><p>{studentPlan[recommendation.id].change}</p>
+            <h4>When you should notice it</h4><p>{studentPlan[recommendation.id].notice.charAt(0).toUpperCase() + studentPlan[recommendation.id].notice.slice(1)}.</p>
+            <h4>How you’ll know it’s working</h4>
+            <ul>{studentReadings(recommendation.id).map(r => <li key={r.label}>{r.label}: <strong>{r.now}</strong> now; target <strong>{r.target}</strong>.</li>)}</ul>
+          </> : <>
+            <h4>What still needs investigation</h4><p>{finding.hypothesis}</p>
+            <h4>Proposed course action</h4><p>{recommendation.action}</p>
+            <h4>How progress would be checked</h4>
+            <ul>{recommendation.remeasure.map(m => <li key={m.label}>{m.label}: <strong>{withUnit(resolveMetric(dataset, m.metric), m.unit)}</strong> now; target <strong>{m.target}</strong>.</li>)}</ul>
+            <h4>Review point</h4><p>{recommendation.reviewPoint}</p>
+          </>}
         </details>
         <button className="btn--link" type="button" onClick={() => onOpenFinding(finding.id)}>Open the full finding <span aria-hidden="true">→</span></button>
       </article>)}

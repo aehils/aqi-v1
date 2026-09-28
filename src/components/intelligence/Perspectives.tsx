@@ -14,6 +14,7 @@ import { sourceLabel } from '../../data/indicators';
 import { allCohortValidation } from '../../engine/validate';
 import { validationRule, BIAS_THRESHOLD } from '../../data/validation';
 import { groupLabels } from '../../instruments';
+import type { Audience } from '../../engine/actionPlan';
 
 const pointLabels = { student: 'Students', faculty: 'Lecturers', institution: 'Academic / admin' } as const;
 
@@ -39,7 +40,10 @@ const Row = ({ label, note, value, items }: { label: string; note?: string; valu
 );
 
 /** One topic at a time: respondent measures, record context, then optional detail. */
-export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onOpenFinding: (id: string) => void }) => {
+export const Perspectives = ({ dataset, audience, onOpenFinding }: { dataset: Dataset; audience: Audience; onOpenFinding: (id: string) => void }) => {
+  // Students compare their own group with lecturers and course records; institutional returns are staff material.
+  const student = audience === 'student';
+  const shown = student ? (['student', 'faculty'] as const) : (['student', 'faculty', 'institution'] as const);
   const ds = dataset;
   const n = groupSizes(ds);
   const scale = (id: string, g: 'student' | 'faculty') => `${f1(meanFor(ds, id, g).mean)} / 5`;
@@ -53,19 +57,19 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
   };
   const mx = (row: string) => `${f1(matrixMeanFor(ds, 'IND-TECH-FAC', 'faculty', row).mean)} / 5`;
   const cat = (id: 'IND-ILO-01' | 'IND-TRN-01' | 'IND-MON-01' | 'IND-REV-01') => categoricalFor(ds, id, 'institution', categoricalMaps[id]);
-  const cmp = allComparisons(ds);
+  const cmp = allComparisons(ds, [...shown]);
   const [onlyDifferences, setOnlyDifferences] = useState(false);
   const [selected, setSelected] = useState(cmp[0]?.spec.constructId ?? '');
   const visible = onlyDifferences ? cmp.filter(c => c.flagged) : cmp;
   const active = visible.find(c => c.spec.constructId === selected) ?? visible[0];
-  const respondents = active ? (['student', 'faculty', 'institution'] as const).flatMap(key => active.cells[key] ? [{ key, cell: active.cells[key]! }] : []) : [];
-  const absent = active ? (['student', 'faculty', 'institution'] as const).filter(key => !active.cells[key]).map(key => pointLabels[key]) : [];
+  const respondents = active ? shown.flatMap(key => active.cells[key] ? [{ key, cell: active.cells[key]! }] : []) : [];
+  const absent = active ? shown.filter(key => !active.cells[key]).map(key => pointLabels[key]) : [];
   const scaleReadings = respondents.filter(r => r.cell.onFivePoint && Number.isFinite(r.cell.value));
   const gap = scaleReadings.length >= 2 ? Math.max(...scaleReadings.map(r => r.cell.value)) - Math.min(...scaleReadings.map(r => r.cell.value)) : null;
 
   return (
     <div className="column report-page analysis-page sources-page">
-      <div className="sources-toolbar"><p><strong>{cmp.filter(c => c.flagged).length} of {cmp.length}</strong> topics have different respondent signals</p><label><input type="checkbox" checked={onlyDifferences} onChange={e => setOnlyDifferences(e.target.checked)} /> Differences only</label></div>
+      <div className="sources-toolbar"><p><strong>{cmp.filter(c => c.flagged).length} of {cmp.length}</strong> {student ? 'topics where students and lecturers see things differently' : 'topics have different respondent signals'}</p><label><input type="checkbox" checked={onlyDifferences} onChange={e => setOnlyDifferences(e.target.checked)} /> Differences only</label></div>
       <div className="sources-workspace">
         <nav className="source-topics" aria-label="Comparison topics">{visible.map(c => <button type="button" key={c.spec.constructId} aria-pressed={active?.spec.constructId === c.spec.constructId} onClick={() => setSelected(c.spec.constructId)}><strong>{constructById(c.spec.constructId).name}</strong><span>{c.flagged ? 'Different signals' : Object.keys(c.cells).filter(k => k !== 'objective').length < 2 ? 'One respondent source' : 'No difference flagged'}</span></button>)}</nav>
         {active ? <section className="source-workspace-detail" aria-labelledby="comparison-title">
@@ -129,7 +133,7 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
           />
         </div>
 
-        <div className="panel">
+        {!student && <div className="panel">
           <h3>Academic / administrative</h3>
           <p className="panel__n">n = {n.institution}</p>
           <p className="panel__note">What the institution has approved, declared and put in place.</p>
@@ -167,7 +171,7 @@ export const Perspectives = ({ dataset, onOpenFinding }: { dataset: Dataset; onO
           <Row label="Rubrics provided" value={cat('IND-TRN-01').modal} />
           <Row label="Turnaround monitored" value={cat('IND-MON-01').modal} />
           <Row label="Quality indicators reviewed" value={cat('IND-REV-01').modal} />
-        </div>
+        </div>}
       </div>
 
       </div></details>
