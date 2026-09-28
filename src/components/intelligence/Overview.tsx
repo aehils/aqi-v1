@@ -94,8 +94,8 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
           <h2 id="priorities-title">Issues to act on, strengths to keep</h2>
           <p>Course-wide findings, paired with a proposed next step.</p>
         </div>
-        <label className="report-filter">Focus on a priority
-          <select value={focus} onChange={e => setFocus(e.target.value)}>
+        <label className="report-filter">Filter
+          <select aria-label="Filter by priority" value={focus} onChange={e => setFocus(e.target.value)}>
             <option value="all">All course priorities ({analysis.priorities.length})</option>
             {analysis.priorities.map(p => <option value={p.finding.id} key={p.finding.id}>{topicOf(p.finding)}</option>)}
           </select>

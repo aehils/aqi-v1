@@ -88,14 +88,13 @@ td.num,
 }
 
 .shell__header {
-  border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
 
 .shell__header-inner {
   max-width: none;
   margin: 0 auto;
-  padding: var(--s2) var(--margin);
+  padding: 8px var(--margin);
   display: flex;
   align-items: center;
   gap: var(--s3);
@@ -120,9 +119,8 @@ td.num,
 .shell__course {
   flex: 1;
   min-width: 0;
-  text-align: right;
   color: var(--ink-muted);
-  font-size: 13px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -176,6 +174,28 @@ td.num,
 .stepper {
   flex-shrink: 0;
   margin-left: auto;
+}
+
+/* Before the results, the screen's own Back / Continue take the
+   stepper's place at the right of the header. */
+.shell__actions {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shell__actions:empty {
+  display: none;
+}
+
+.shell__actions .btn {
+  padding: 8px 16px;
+}
+
+.shell__actions .btn--skip {
+  margin-right: 4px;
 }
 
 .stepper__inner {
@@ -278,20 +298,6 @@ td.num,
   font-weight: 600;
 }
 
-.shell--results .shell__header {
-  border-bottom: 0;
-}
-
-.shell--results .shell__header-inner {
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-
-.shell--results .shell__course {
-  text-align: left;
-  font-size: 14px;
-}
-
 .shell--results .column {
   padding-top: 56px;
 }
@@ -306,11 +312,11 @@ td.num,
 }
 
 @media (max-width: 700px) {
-  .shell--results .shell__course {
+  .shell__course {
     display: none;
   }
 
-  .shell--results .shell__header-inner {
+  .shell__header-inner {
     gap: 12px;
   }
 
@@ -911,6 +917,21 @@ table.data th:last-child {
   gap: var(--s1);
 }
 
+/* Fills the left column first, so the numbers read down, not across. */
+.options--split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(var(--option-rows), auto);
+  grid-auto-flow: column;
+  column-gap: var(--s2);
+}
+
+@media (max-width: 700px) {
+  .options--split {
+    display: flex;
+  }
+}
+
 .option {
   width: 100%;
   text-align: left;
@@ -1196,6 +1217,11 @@ table.data th:last-child {
   color: var(--ink-muted);
   font-size: 13px;
   margin-left: auto;
+}
+
+/* The buttons live in the header now, so the hint starts the row. */
+.q-hint:only-child {
+  margin-left: 0;
 }
 
 textarea.q-open {
@@ -2536,7 +2562,9 @@ svg.chart text {
 .report-section-heading { display: flex; justify-content: space-between; gap: 32px; align-items: flex-end; }
 .report-section-heading p:not(.section-label), .report-section-lede { margin-top: 12px; color: var(--ink-muted); font-size: 14px; max-width: 750px; }
 .report-filter { display: grid; gap: 6px; flex-shrink: 0; font-size: 12px; color: var(--ink-muted); }
-.report-filter select { font: inherit; color: var(--ink); background: white; border: 1px solid var(--line-strong); border-radius: 6px; padding: 10px 28px 10px 12px; max-width: 230px; }
+/* Our own chevron at a fixed inset, and the box sized to the option showing
+   rather than the longest one, so the chevron sits just after the text. */
+.report-filter select { font: inherit; color: var(--ink); background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235b6672' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center; appearance: none; field-sizing: content; border: 1px solid var(--line-strong); border-radius: 6px; padding: 10px 32px 10px 12px; max-width: 260px; }
 .report-legend { display: flex; gap: 22px; justify-content: flex-end; margin: 22px 0 14px; font-size: 12px; color: var(--ink-muted); }
 .report-legend > span { display: flex; align-items: center; gap: 8px; }
 .report-dot, .report-diamond { width: 9px; height: 9px; background: var(--accent); border-radius: 50%; display: inline-block; }

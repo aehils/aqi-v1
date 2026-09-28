@@ -11,9 +11,6 @@
 .analysis-lead-action { grid-column: 1 / -1; display: flex; gap: 24px; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--line-strong); }
 .analysis-lead-action strong { font: 500 20px/1.4 var(--serif); }
 .analysis-lead-action .btn { flex-shrink: 0; }
-/* Inset the jump links to the summary's content edges (padding + 1px border),
-   so they run from the lead action's text to its button. */
-.analysis-page .report-jumps { padding-inline: 29px; justify-content: space-between; }
 .analysis-page .analysis-priority { align-items: stretch; }
 .analysis-page .analysis-priority .finding-visual { width: 100%; }
 .analysis-page .analysis-question { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
@@ -48,7 +45,6 @@
 @media(max-width: 700px) {
  .analysis-lead-action { flex-direction: column; align-items: flex-start; }
  .analysis-page .analysis-summary h2 { font-size: 28px; }
- .analysis-page .report-jumps { padding-inline: 21px; justify-content: flex-start; }
  .analysis-page .profile__row { grid-template-columns: 1fr; gap: 14px; padding: 20px; }
  .analysis-page .profile__row > .band { justify-self: start; }
  .analysis-page .analysis-evidence-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); }

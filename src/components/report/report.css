@@ -15,7 +15,9 @@
 .report-heading h1 em { color: var(--accent); font-weight: 400; }
 .report-heading > p:last-child { color: var(--ink-muted); font-size: 15px; }
 .report-page .report-concern { font-size: 21px; }
-.report-page .report-jumps { justify-content: space-between; gap: 20px; }
+/* Inset the jump links to the summary's content edges (padding + 1px border),
+   so the row lines up with the summary above it on the report and analysis. */
+.report-page .report-jumps { justify-content: space-between; gap: 20px; padding-inline: 29px; }
 .report-page .report-section { padding-top: 52px; }
 .report-page .report-priorities { align-items: stretch; gap: 24px; }
 .report-page .report-priority { padding: 26px; display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); }
@@ -67,7 +69,7 @@
   .report-page .report-priority h3 { min-height: 0; font-size: 25px; }
   .report-page .report-reading { grid-template-columns: 1fr; gap: 18px; padding: 20px; }
   .report-page .report-journey { grid-template-columns: 1fr 1fr; }
-  .report-page .report-jumps { display: grid; grid-template-columns: 1fr 1fr; }
+  .report-page .report-jumps { display: grid; grid-template-columns: 1fr 1fr; padding-inline: 21px; }
   .report-page .report-jumps a { font-size: 11px; }
   .contribution-visual { float: none; margin: 0 0 20px; justify-content: center; }
 }
@@ -174,6 +176,8 @@
 .report-page .report-summary { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 1.3fr); background: var(--accent-soft); padding: 24px 28px; gap: 20px 32px; }
 .report-page .report-summary__intro { padding: 0; align-self: center; }
 .report-page .report-summary h2 { font-size: 23px; }
+/* The page title opens the summary, so it takes the heading's slot at a title's size. */
+.report-page .report-summary__title { font: 500 32px/1.15 var(--serif); color: var(--ink); margin: 0; }
 .report-page .report-summary__intro > p { margin: 6px 0 0; font-size: 12px; color: var(--ink-muted); }
 .report-summary-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
 .report-summary-stats > div { display: flex; flex-direction: column-reverse; justify-content: center; gap: 6px; padding: 0 20px; border-left: 1px solid var(--line-strong); }

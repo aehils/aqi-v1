@@ -39,8 +39,8 @@ export const EvaluationInsights = ({ submission, dataset, onOpenFinding }: {
         <h2 id="evaluation-title">Where change could help most.</h2>
         <p>Combined course evidence, including your response. Actions below are suggestions.</p>
       </div>
-      <label className="report-filter">Explore a concern
-        <select value={focus} onChange={e => setFocus(e.target.value)}>
+      <label className="report-filter">Filter
+        <select aria-label="Filter by concern" value={focus} onChange={e => setFocus(e.target.value)}>
           <option value="all">All course priorities</option>
           {evaluation.priorities.map(p => <option value={p.finding.id} key={p.finding.id}>{p.guidance.topic}</option>)}
         </select>

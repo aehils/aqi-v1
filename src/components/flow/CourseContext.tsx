@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { course } from '../../data/course';
+import { HeaderActions } from '../shell/HeaderActions';
 
 export const CourseContext = ({ onContinue, onBack }: { onContinue: () => void; onBack: () => void }) => {
   useEffect(() => {
@@ -44,14 +45,14 @@ export const CourseContext = ({ onContinue, onBack }: { onContinue: () => void; 
         </dl>
       </div>
 
-      <div className="screen__tail" style={{ display: 'flex', gap: 16 }}>
+      <HeaderActions>
         <button type="button" className="btn btn--secondary" onClick={onBack}>
           Back
         </button>
-        <button type="button" className="btn" onClick={onContinue} autoFocus>
+        <button type="button" className="btn" onClick={onContinue}>
           Continue
         </button>
-      </div>
+      </HeaderActions>
     </div>
   );
 };

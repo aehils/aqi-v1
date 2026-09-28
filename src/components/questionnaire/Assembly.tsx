@@ -3,6 +3,7 @@ import type { ViewerSubmission } from '../../engine/session';
 import { seedDataset } from '../../engine/dataset';
 import { constructs } from '../../data/constructs';
 import { derived } from '../../engine/derived';
+import { HeaderActions } from '../shell/HeaderActions';
 
 /** Staged steps, each naming what the code is actually doing. */
 export const Assembly = ({ submission, onDone }: { submission: ViewerSubmission; onDone: () => void }) => {
@@ -69,10 +70,13 @@ export const Assembly = ({ submission, onDone }: { submission: ViewerSubmission;
           </p>
         </div>
 
-        <div className="q-actions screen__tail">
-          <button type="button" className="btn" disabled={!done} onClick={onDone} autoFocus>
+        <HeaderActions>
+          <button type="button" className="btn" disabled={!done} onClick={onDone}>
             Read your report
           </button>
+        </HeaderActions>
+
+        <div className="q-actions screen__tail">
           <span className="q-hint">
             {done ? 'Your report is ready. The analysis of the course itself follows it.' : 'Assembling evidence…'}
           </span>
