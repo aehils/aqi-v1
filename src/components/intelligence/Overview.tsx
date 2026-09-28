@@ -71,12 +71,12 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
   const shown = analysis.priorities.filter(p => focus === 'all' || p.finding.id === focus);
 
   return <div className="column report-page analysis-page">
-    <section className="report-summary" aria-labelledby="brief-title">
-      <div className="report-summary__intro"><h2 id="brief-title">Where to focus</h2><p>Priorities from the combined course evidence.</p></div>
-      <dl className="report-summary-stats">
-        <div><dt>Supported issues</dt><dd>{analysis.concerns.length}</dd></div>
-        <div><dt>Strengths to keep</dt><dd>{analysis.strengths.length}</dd></div>
-        <div><dt>Domains needing evidence</dt><dd>{limited}</dd></div>
+    <section className="report-summary analysis-summary" aria-labelledby="brief-title">
+      <div className="report-summary__intro"><h2 id="brief-title">Where to focus</h2></div>
+      <dl className="report-summary-stats focus-stats">
+        <div><dt><a href="#course-priorities">{analysis.concerns.length === 1 ? 'Issue' : 'Issues'} to act on <span aria-hidden="true">↘</span></a></dt><dd>{analysis.concerns.length}</dd></div>
+        <div><dt><a href={analysis.strengths.length ? '#course-strengths' : '#course-priorities'}>{analysis.strengths.length === 1 ? 'Strength' : 'Strengths'} to keep <span aria-hidden="true">↘</span></a></dt><dd>{analysis.strengths.length}</dd></div>
+        <div><dt><a href="#quality-profile">{limited === 1 ? 'Domain' : 'Domains'} needing evidence <span aria-hidden="true">↘</span></a></dt><dd>{limited}<small> of {domains.length}</small></dd></div>
       </dl>
       <div className="analysis-lead-action"><div><span className="report-kicker">First proposed action</span><strong>{lead ? actionTitles[lead.id] : 'Review the evidence gaps'}</strong></div><button type="button" className="btn" onClick={() => onNavigate('recommendations')}>Review the action plan →</button></div>
     </section>
@@ -106,7 +106,7 @@ export const Overview = ({ dataset, impact, submission, onOpenFinding, onNavigat
         {shown.map(p => <PriorityCard key={p.finding.id} priority={p} order={analysis.priorities.indexOf(p) + 1} dataset={dataset} onOpenFinding={onOpenFinding} />)}
       </div>
       {analysis.priorities.length === 0 && <p className="analysis-empty">No problem findings meet all their current rules. This does not establish that the course is problem-free.</p>}
-      {analysis.strengths.map(f => <aside className="report-strength" key={f.id}>
+      {analysis.strengths.map((f, i) => <aside className="report-strength" key={f.id} id={i === 0 ? 'course-strengths' : undefined}>
         <p className="report-kicker">A course strength to preserve</p><h3>{titleOf(f)}</h3>
         <EvidenceGraphic finding={f} dataset={dataset} />
         <button className="btn--link" type="button" onClick={() => onOpenFinding(f.id)}>See the supporting evidence →</button>
