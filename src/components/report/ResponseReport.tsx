@@ -9,11 +9,12 @@ import { validationRule } from '../../data/validation';
 import { constructById } from '../../data/constructs';
 import { domainById } from '../../data/domains';
 import { questionById, groupNouns, instruments } from '../../instruments';
-import { f1, withUnit } from '../../lib/format';
+import { f1 } from '../../lib/format';
 import { findingById } from '../../data/findings';
 import { seedDataset } from '../../engine/dataset';
-import { ChainView, statusLabel } from './ChainView';
-import { ProportionRing, FiveDots } from './ReportVisuals';
+import { ChainView } from './ChainView';
+import { LearningPath } from './LearningPath';
+import { FiveDots } from './ReportVisuals';
 
 const readingLabels: Record<string, string> = {
   'IND-RES-01': 'Access to learning resources',
@@ -106,7 +107,7 @@ export const ResponseReport = ({ submission, dataset, onContinue, onOpenFinding 
         <details className="report-disclosure"><summary>How to interpret this</summary><div className="report-disclosure__body"><p>{validationRule} These demo rules flag differences to explore, not honesty or reliability. All answers are retained without reweighting.</p></div></details>
       </section>
 
-      <section className="report-section report-context" id="course-context" aria-labelledby="context-title"><p className="section-label">04 · The bigger picture</p><h2 id="context-title">From intention to capability.</h2><p className="report-section-lede">Where the course meets its targets—and where the learning pathway needs attention.</p><p className="report-footnote">Course-level measures · targets are set by the demo model.</p><ol className="report-journey">{report.chain.map(r => <li key={r.link.id} className={`journey-stage journey-stage--${r.status}`}><span>{r.link.step.toString().padStart(2, '0')} <span aria-hidden="true">→</span></span><strong>{r.link.name}</strong><div className="journey-stage__graphic">{r.link.unit === '%' ? <ProportionRing value={r.value} label={r.link.id === 'L1' ? 'Outcomes requiring application or higher' : r.link.id === 'L2' ? 'Marks for application or higher' : 'Application score'} /> : r.link.unit === '/5' ? <FiveDots value={r.value} label="Participation" /> : <div className="release-count"><strong>{withUnit(r.value)}</strong><span>releases with a follow-up task</span><span className="release-count__link" aria-hidden="true">Feedback ··· Task</span></div>}</div><span className="journey-stage__status">{statusLabel[r.status]}</span><small>Target {r.link.direction === 'higher' ? '≥' : '≤'} {r.link.unit === 'releases' && r.link.intact === 1 ? '1 release' : withUnit(r.link.intact, r.link.unit)}</small></li>)}</ol>
+      <section className="report-section report-context" id="course-context" aria-labelledby="context-title"><p className="section-label">04 · The bigger picture</p><h2 id="context-title">From intention to capability.</h2><p className="report-section-lede">Where the course meets its targets—and where the learning pathway needs attention.</p><p className="report-footnote">Course-level measures · targets are set by the demo model.</p><LearningPath chain={report.chain} />
         <details className="report-disclosure"><summary>Preview the course evidence <span>{broken ? `First stage below threshold: ${broken.link.name.toLowerCase()}` : 'View all stages'}</span></summary><div className="report-disclosure__body"><p className="report-footnote">Source measures and thresholds for each stage.</p><ChainView chain={report.chain} evidenced={report.linksYouEvidence} /></div></details>
       </section>
       <aside className="report-contribution">

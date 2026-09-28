@@ -12,6 +12,7 @@ export const FiveDots = ({ value, label }: { value: number | null; label: string
 /** Different measures need different visual grammars; time is an interval, not a completion score. */
 export const EvidenceGraphic = ({ finding, dataset }: { finding: Finding; dataset: Dataset }) => {
   const values = finding.overviewMetrics.map(m => resolveMetric(dataset, m.metric));
+  if (finding.id === 'F6') return <figure className="finding-visual relationship-visual"><figcaption>Experience and demonstrated skills</figcaption><FiveDots value={values[0]} label="Student satisfaction" /><div className="ring-comparison"><ProportionRing value={values[1]} label="Application score" /><ProportionRing value={values[2]} label="Analysis score" /></div></figure>;
   if (finding.id === 'F1') {
     const policy = resolveMetric(dataset, { kind: 'derived', key: 'policy.threshold' });
     const days = resolveMetric(dataset, { kind: 'derived', key: 'feedback.turnaround.median' });

@@ -248,3 +248,4 @@
 }
 
 .report-page .report-title { font: 500 clamp(30px, 3.5vw, 42px)/1.2 var(--serif); color: var(--ink); margin: 0 0 24px; }
+.report-page .report-journey .release-count strong { font: 48px/1 var(--serif); }

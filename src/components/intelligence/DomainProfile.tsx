@@ -3,10 +3,11 @@ import type { Dataset } from '../../engine/dataset';
 import { allDomainBands, bandLabel, bandMeaning } from '../../engine/bands';
 import { domains } from '../../data/domains';
 import { constructById } from '../../data/constructs';
+import { CoverageMeter } from './CoverageMeter';
 import { BandTag } from '../shell/BandTag';
 import { sourceLabel } from '../../data/indicators';
 
-/** The quality profile: seven domains, a band each, derivation on request. No score, no numbers on the face. */
+/** Evidence coverage and quality status stay separate; derivation opens on request. */
 export const DomainProfile = ({ dataset, onOpenConstruct }: { dataset: Dataset; onOpenConstruct: (id: string) => void }) => {
   const bands = allDomainBands(dataset);
   const [open, setOpen] = useState<string | null>(null);
@@ -21,15 +22,15 @@ export const DomainProfile = ({ dataset, onOpenConstruct }: { dataset: Dataset; 
             <button type="button" className="profile__row" aria-expanded={isOpen} aria-controls={`domain-${b.domainId}`} onClick={() => setOpen(isOpen ? null : b.domainId)}>
               <span>
                 <span className="profile__name">{d.name}</span>
-                <span className="profile__question">{d.coreQuestion}</span>
+
               </span>
               <span className="profile__evidence">
-                {b.evidenced} of {total} aspects measured
+                <CoverageMeter measured={b.evidenced} total={total} />
               </span>
               <BandTag band={b.band} title={b.derivation} />
             </button>
             {isOpen && (
-              <div className="profile__detail" id={`domain-${b.domainId}`}>
+              <div className="profile__detail" id={`domain-${b.domainId}`}><p>{d.coreQuestion}</p>
                 <p>
                   <strong>{bandLabel[b.band]}.</strong> {bandMeaning[b.band]} Derivation: {b.derivation}.
                 </p>
