@@ -49,11 +49,10 @@ export const ResponseReport = ({ submission, dataset, onContinue, onOpenFinding 
 
   return (
     <div className="column report report-page">
-      <h1 className="report-title">Your {report.role === 'student' ? 'Student' : 'Lecturer'} Report</h1>
       <section className="report-summary" aria-labelledby="summary-title">
         <div className="report-summary__intro">
-          <h2 id="summary-title">Start with your perspective</h2>
-          <p>Your answers alongside the course evidence.</p>
+          <h1 id="summary-title" className="report-summary__title">Your {report.role === 'student' ? 'Student' : 'Lecturer'} Report</h1>
+          <p>Your perspective alongside the course evidence.</p>
         </div>
         <dl className="report-summary-stats">
           <div><dt>Your ratings</dt><dd>{report.readings.length}</dd></div>
@@ -73,7 +72,7 @@ export const ResponseReport = ({ submission, dataset, onContinue, onOpenFinding 
 
       <section className="report-section" id="your-ratings" aria-labelledby="ratings-title">
         <div className="report-section-heading"><div><p className="section-label">02 · Your answers in context</p><h2 id="ratings-title">How your experience compares</h2><p>Your ratings beside the group average, excluding your response.</p></div>
-          <label className="report-filter">Show topic<select value={domain} onChange={e => setDomain(e.target.value)}><option value="all">All topics ({report.readings.length})</option>{report.domains.map(d => <option key={d.domainId} value={d.domainId}>{domainById(d.domainId).shortName} ({d.n})</option>)}{report.readings.some(r => !r.domainId) && <option value="other">Other readings</option>}</select></label>
+          <label className="report-filter">Filter<select aria-label="Filter by topic" value={domain} onChange={e => setDomain(e.target.value)}><option value="all">All topics ({report.readings.length})</option>{report.domains.map(d => <option key={d.domainId} value={d.domainId}>{domainById(d.domainId).shortName} ({d.n})</option>)}{report.readings.some(r => !r.domainId) && <option value="other">Other readings</option>}</select></label>
         </div>
         <p className="report-footnote">Unscored answers are excluded.{report.role === 'faculty' && ' Small lecturer sample: descriptive context only.'}</p>
         <div className="report-legend"><span><i className="report-dot" /> Your answer</span><span><i className="report-diamond" /> Other {noun} respondents (average)</span></div>

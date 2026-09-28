@@ -7,7 +7,7 @@ export const course = {
   code: 'BCH 305',
   title: 'Metabolic Biochemistry',
   level: '300',
-  session: '2025/2026, Second Semester',
+  session: '2025/2026, Semester 2',
   enrolment: 148,
   teachingTeam: { lecturers: 2, total: 9, note: '2 course lecturers, 7 demonstrators/tutors' },
   rooms: [

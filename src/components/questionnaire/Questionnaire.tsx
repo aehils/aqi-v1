@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Dispatch } from 'react';
+import type { CSSProperties, Dispatch } from 'react';
 import type { AnswerValue, Question } from '../../data/types';
 import type { Action, State } from '../../state/reducer';
 import { instruments } from '../../instruments';
 import { indicatorById, evidenceClassLabel } from '../../data/indicators';
 import { constructById } from '../../data/constructs';
 import { domainById } from '../../data/domains';
+import { HeaderActions } from '../shell/HeaderActions';
 
 const evidenceTypeLabel: Record<string, string> = {
   direct: 'Direct evidence',
@@ -58,6 +59,9 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
   // Open responses are qualitative evidence and are never required. Skipping
   // leaves no answer recorded, rather than recording an empty one.
   const skippable = q.type === 'open';
+
+  // Long option lists read down two columns, so the question fits the screen.
+  const splitOptions = (q.options ?? []).length > 8;
 
   const setAnswer = useCallback((value: AnswerValue) => dispatch({ type: 'ANSWER', questionId: q.id, value }), [dispatch, q.id]);
 
@@ -172,7 +176,11 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
       )}
 
       {q.type === 'multi' && (
-        <ul className="options" aria-label={q.text}>
+        <ul
+          className={`options${splitOptions ? ' options--split' : ''}`}
+          style={splitOptions ? ({ '--option-rows': Math.ceil((q.options ?? []).length / 2) } as CSSProperties) : undefined}
+          aria-label={q.text}
+        >
           {(q.options ?? []).map((o, i) => {
             const current = Array.isArray(answer) ? answer : [];
             const on = current.includes(o.key);
@@ -258,18 +266,21 @@ export const Questionnaire = ({ state, dispatch }: { state: State; dispatch: Dis
         />
       )}
 
-      <div className="q-actions screen__tail">
+      <HeaderActions>
+        {skippable && (
+          <button type="button" className="btn--skip" onClick={move}>
+            Skip
+          </button>
+        )}
         <button type="button" className="btn btn--secondary" onClick={() => dispatch({ type: 'PREV_QUESTION' })}>
           Back
         </button>
         <button type="button" className="btn" disabled={!answered} onClick={advance}>
           {last ? 'Submit responses' : 'Continue'}
         </button>
-        {skippable && (
-          <button type="button" className="btn--skip" onClick={move}>
-            Skip
-          </button>
-        )}
+      </HeaderActions>
+
+      <div className="q-actions screen__tail">
         <span className="q-hint">
           {q.type === 'single' && 'Number keys select · Enter continues'}
           {q.type === 'multi' && 'Number keys toggle · Enter continues'}

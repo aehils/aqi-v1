@@ -1,8 +1,9 @@
-import type { MouseEvent, ReactNode } from 'react';
+import { useState, type MouseEvent, type ReactNode } from 'react';
 import type { Tab, View } from '../../state/reducer';
 import { course } from '../../data/course';
 import { instrumentedCount, constructCount } from '../../data/constructs';
 import logo from '../../assets/logo.png';
+import { HeaderActionsSlot } from './HeaderActions';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Course overview' },
@@ -10,8 +11,6 @@ const tabs: { id: Tab; label: string }[] = [
   { id: 'findings', label: 'All findings' },
   { id: 'recommendations', label: 'Action plan' },
 ];
-
-const [sessionYear, sessionSemester] = course.session.split(', ');
 
 const steps = [
   { view: 'report', label: 'Your report' },
@@ -60,7 +59,9 @@ interface ShellProps {
 
 export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, onRestart, onJumpToResults, children }: ShellProps) => {
   const showStepper = view === 'report' || view === 'intelligence';
+  const [actionsSlot, setActionsSlot] = useState<HTMLElement | null>(null);
   return (
+  <HeaderActionsSlot.Provider value={actionsSlot}>
   <div className={`shell${showStepper ? ' shell--results' : ''}`}>
     <div className="shell__bars">
     {view !== 'entry' && (
@@ -70,11 +71,11 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
           <div className="shell__course">
             {course.code}: {course.title}
             <span className="sep" aria-hidden="true">|</span>
-            {sessionSemester}, {sessionYear}
+            {course.session}
             <span className="sep" aria-hidden="true">|</span>
             {course.institution}
           </div>
-          {showStepper && <Stepper view={view} hasReport={hasReport} onReport={onReport} onAnalysis={onAnalysis} />}
+          {showStepper ? <Stepper view={view} hasReport={hasReport} onReport={onReport} onAnalysis={onAnalysis} /> : <div className="shell__actions" ref={setActionsSlot} />}
         </div>
       </header>
     )}
@@ -117,5 +118,6 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
       </div>
     </footer>
   </div>
+  </HeaderActionsSlot.Provider>
   );
 };
