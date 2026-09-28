@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import type { Tab, View } from '../../state/reducer';
 import { course } from '../../data/course';
 import { instrumentedCount, constructCount } from '../../data/constructs';
@@ -34,6 +34,16 @@ const Stepper = ({ view, hasReport, onReport, onAnalysis }: { view: View; hasRep
       </ol>
     </nav>
   );
+};
+
+// Section links like `#course-priorities` share the URL hash with the app's
+// routing, so they scroll here instead of changing the hash.
+const jumpWithinPage = (e: MouseEvent<HTMLElement>) => {
+  const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="#"]');
+  const target = link && document.getElementById(link.hash.slice(1));
+  if (!target) return;
+  e.preventDefault();
+  target.scrollIntoView({ block: 'start' });
 };
 
 interface ShellProps {
@@ -80,7 +90,7 @@ export const AppShell = ({ view, tab, hasReport, onTab, onReport, onAnalysis, on
       </div>
     )}
     </div>
-    <main className="shell__main">{children}</main>
+    <main className="shell__main" onClick={jumpWithinPage}>{children}</main>
     {view !== 'report' && view !== 'intelligence' && (
       <div className="shell__shortcut">
         <button type="button" className="btn--link" style={{ fontSize: 12 }} onClick={onJumpToResults} title="Prototyping shortcut: fills the questionnaire with a simulated response">
