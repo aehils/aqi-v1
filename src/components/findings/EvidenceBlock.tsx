@@ -235,7 +235,7 @@ export const EvidenceBlock = ({ refs, dataset }: { refs: EvidenceRef[]; dataset:
             <Item key={r.id} evidence={r}>
               <dl className="records">
                 <dt>CA average</dt>
-                <dd>{resultsExtract.caAverage}%</dd>
+                <dd>{pct(resultsExtract.caAverage)}</dd>
                 <dt>Pass rate</dt>
                 <dd>{pct(derived('results.pass_rate'))}</dd>
               </dl>

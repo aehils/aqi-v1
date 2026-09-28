@@ -9,7 +9,7 @@ export const withUnit = (v: number, unit?: string): string => {
     case '/5':
       return `${v.toFixed(1)} / 5`;
     case '%':
-      return `${Number.isInteger(v) ? v : v.toFixed(1)}%`;
+      return `${Math.round(v)}%`;
     case 'share':
       return `${Math.round(v * 100)}%`;
     case 'days':
