@@ -174,16 +174,8 @@ td.num,
 }
 
 .stepper {
-  /* Sits at the right end of the tab row; on its own on the report. */
+  flex-shrink: 0;
   margin-left: auto;
-  align-self: center;
-}
-
-/* On narrow screens the stepper wraps below the tabs. */
-@media (max-width: 900px) {
-  .stepper {
-    padding: 8px 0 12px;
-  }
 }
 
 .stepper__inner {
@@ -192,114 +184,163 @@ td.num,
   padding: 0;
   display: flex;
   align-items: center;
-  gap: var(--s2);
+  gap: 12px;
 }
 
 .stepper__step {
   display: flex;
   align-items: center;
-  gap: var(--s2);
+  gap: 12px;
 }
 
-/* Connector drawn before every step but the first. */
 .stepper__step + .stepper__step::before {
-  content: '';
-  width: 48px;
-  height: 1px;
-  background: var(--line-strong);
-}
-
-.stepper__step--done + .stepper__step::before {
-  background: var(--accent);
+  content: '›';
+  color: var(--line-strong);
 }
 
 .stepper__button {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   background: none;
   border: none;
-  padding: 6px 4px;
+  padding: 12px 0;
+  min-height: 44px;
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
+  white-space: nowrap;
   color: var(--ink-muted);
   cursor: pointer;
-  border-radius: var(--radius);
+  border-radius: 2px;
 }
 
 .stepper__button:hover:not(:disabled) {
-  color: var(--ink);
-}
-
-.stepper__button:hover:not(:disabled) .stepper__index {
-  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .stepper__button[aria-current='step'] {
   color: var(--ink);
+  font-weight: 600;
   cursor: default;
 }
 
 .stepper__index {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  display: inline-grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 600;
-  transition: border-color var(--t);
+  color: var(--ink-muted);
+  font-size: 13px;
 }
 
 .stepper__button[aria-current='step'] .stepper__index {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.stepper__step--done .stepper__index {
-  background: var(--accent-soft);
-  border-color: var(--accent);
   color: var(--accent);
 }
 
 .nav {
-  border-bottom: 1px solid var(--line);
   background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
 
-.nav__inner {
+.nav__tabs {
   max-width: none;
   margin: 0 auto;
   padding: 0 var(--margin);
   display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--s4);
-  /* Height of a tab row, so the bar holds steady on the report, which has no tabs. */
-  min-height: 51px;
-}
-
-.nav__tabs {
-  display: flex;
-  gap: var(--s4);
+  gap: 28px;
+  overflow-x: auto;
 }
 
 .nav__tab {
+  flex-shrink: 0;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   padding: 14px 0;
+  min-height: 50px;
   cursor: pointer;
   color: var(--ink-muted);
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color var(--t), border-color var(--t);
+}
+
+.nav__tab:hover {
+  color: var(--accent);
+  border-bottom-color: var(--line-strong);
+}
+
+.nav__tab:focus-visible {
+  outline-offset: -3px;
 }
 
 .nav__tab[aria-current='page'] {
-  color: var(--ink);
+  color: var(--accent);
   border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.shell--results .shell__header {
+  border-bottom: 0;
+}
+
+.shell--results .shell__header-inner {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.shell--results .shell__course {
+  text-align: left;
+  font-size: 14px;
+}
+
+.shell--results .column {
+  padding-top: 56px;
+}
+
+/* The analysis tabs sit right under their tab row, so they start closer. */
+.shell--results .analysis-page {
+  padding-top: var(--s3);
+}
+
+.shell--results .report-section {
+  scroll-margin-top: 156px;
+}
+
+@media (max-width: 700px) {
+  .shell--results .shell__course {
+    display: none;
+  }
+
+  .shell--results .shell__header-inner {
+    gap: 12px;
+  }
+
+  .nav__tabs {
+    gap: 22px;
+  }
+
+  .nav__tab {
+    font-size: 15px;
+  }
+
+  .shell--results .column {
+    padding-top: 36px;
+  }
+
+  .shell--results .analysis-page {
+    padding-top: var(--s2);
+  }
+}
+
+@media (max-width: 380px) {
+  .stepper__inner,
+  .stepper__step {
+    gap: 8px;
+  }
+
+  .stepper__button {
+    gap: 4px;
+    font-size: 14px;
+  }
 }
 
 .shell__main {
